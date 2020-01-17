@@ -1,0 +1,14 @@
+{
+    "extensionName": {
+        "message": "Le Nordburg Validator",
+        "description": "Name of the extension."
+    },
+    "extensionDescription": {
+        "message": "C'est Validates HTML and whatnot",
+        "description": "Description of the extension."
+    },
+    "defaultTitle": {
+        "message": "Le Nordburg Validator",
+        "description": "What's shown in the mouse-over."
+    }
+}
