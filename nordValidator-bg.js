@@ -5,7 +5,7 @@ if (typeof (nordValidatorBG) == "undefined") {
 var nordValidatorBG = {
 	dbug : nordValidator.dbug,
 	init : function () {
-	} // End of init
+	}, // End of init
 	notify : function (message, sender, sendResponse) {
 		if (nordValidatorBG.dbug) console.log ("nordValidator-bg::Got a message: " + (message.hasOwnProperty("msg") ? message["msg"] : "[no msg]") + " with task: " + message["task"] + " with sender " + sender + " and sendResponse " + sendResponse + ".");
 		if (message["task"] == "someTask") {
