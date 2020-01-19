@@ -24,7 +24,7 @@
     },
     "permissions": [
         "<all_urls>",
-        "activeTab"
+        "storage"
     ],
     "default_locale": "en",
     "default_title": "__MSG_defaultTitle__",

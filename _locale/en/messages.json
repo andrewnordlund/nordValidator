@@ -1,6 +1,6 @@
 {
     "extensionName": {
-        "message": "Nordburg Validator",
+        "message": "The Nordburg Validator Add-on",
         "description": "Name of the extension."
     },
     "extensionDescription": {
@@ -8,7 +8,7 @@
         "description": "Description of the extension."
     },
     "defaultTitle": {
-        "message": "Nordburg Validator",
+        "message": "NordValidator",
         "description": "What's shown in the mouse-over."
     }
 }
