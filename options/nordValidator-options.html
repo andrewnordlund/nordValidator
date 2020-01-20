@@ -13,9 +13,19 @@
 		<main>
 			<section id="optionsSection">
 			<h2>Options</h2>
+
+			</section>
+			<section id="membersSection">
+				<h2>Nordburg Members Options</h2>
+				<!-- Further options: member, cfID -->
 				<div>
-					<label for="validatorURLTxt">Validator URL:</label>
-					<input id="validatorURLTxt" name="validatorURLTxt">
+					<input type="checkbox" name="memberChk" id="memberChk">
+					<label for="memberChk">Member of Nordburg.ca</label>
+				</div>
+				<div class="fieldHolder">
+					<label for="cfIDtxt">Cloud File ID</label>
+					<input type="number" name="cfIDtxt" id="cfIDtxt" aria-describedby="cfIDdesc" min="0">
+					<p id="cfIDdesc">To find the Cloud File ID go to <a href="https://www.nordburg.ca/misc/cloud.php">The Nordburg Cloud File System</a>.</p>
 				</div>
 			</section>
 			<section id="devSection">

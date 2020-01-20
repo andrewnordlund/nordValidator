@@ -3,7 +3,7 @@
     "name": "__MSG_extensionName__",
     "description": "__MSG_extensionDescription__",
     "version": "0.0.1-a1",
-    "hompeage_url": "https://www.nordburg.ca/ext/home.php",
+    "homepage_url": "https://www.nordburg.ca/ext/home.php",
     "icons": {
         "48": "icons/nordValidator-48.png",
         "96": "icons/nordValidator-96.png"

@@ -74,7 +74,7 @@ var nordValidatorOpts = {
 				}
 			});
 		}
-	} // End of init
+	}// End of init
 	createUndoBtn : function () {
 		var undoBtn = null;
 		undoBtn = document.getElementById("undoBtn");
