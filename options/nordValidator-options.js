@@ -2,7 +2,7 @@ if (typeof(nordValidatorOpts) == undefined) {
 	var nordValidatorOpts = {}
 }
 
-nordValidatorOpts = {
+var nordValidatorOpts = {
 	dbug : true,
 	downkeys : {"d" : null,
 		"n" : null},
@@ -23,7 +23,7 @@ nordValidatorOpts = {
 		for (var control in nordValidatorOpts.controls) {
 			nordValidatorOpts.controls[control] = document.getElementById(control);
 		}
-		nordValidator.addToPostLoad([nordValidatorOpts.fillValues, nordValidatorOpts./*someFunction*/]);
+		//nordValidator.addToPostLoad([nordValidatorOpts.fillValues, nordValidatorOpts./*someFunction*/]);
 		nordValidatorOpts.controls["restoreDefaultsBtn"].addEventListener("click", nordValidatorOpts.restoreDefaults,false);
 		nordValidatorOpts.controls["saveBtn"].addEventListener("click", nordValidatorOpts.save,false);
 		nordValidatorOpts.controls["cancelBtn"].addEventListener("click", nordValidatorOpts.cancel,false);
@@ -74,7 +74,7 @@ nordValidatorOpts = {
 				}
 			});
 		}
-	}// End of init
+	} // End of init
 	createUndoBtn : function () {
 		var undoBtn = null;
 		undoBtn = document.getElementById("undoBtn");
@@ -168,7 +168,7 @@ nordValidatorOpts = {
 				if (!nordValidatorOpts.downkeys["n"]) {
 					nordValidatorOpts.downkeys["n"] = (new Date()).getTime();
 				}
-		}
+			}
 		}
 	}, // End of checkKeys
 	checkUpKey : function (e) {
@@ -211,4 +211,6 @@ nordValidatorOpts = {
 		}
 	}, // End of showMemberSection
 }
-if (nordValidatorOpts.dbug) console.log ("nordValidatorOpts loaded.");nordValidator.addToPostLoad([function () {nordValidatorOpts.dbug = nordValidator.dbug;}]);
+if (nordValidatorOpts.dbug) console.log ("nordValidatorOpts loaded.");
+
+nordValidator.addToPostLoad([function () {nordValidatorOpts.dbug = nordValidator.dbug;}]);

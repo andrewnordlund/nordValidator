@@ -36,6 +36,6 @@
         }
     },
     "options_ui": {
-        "page": "options/options.html"
+        "page": "options/nordValidator-options.html"
     }
 }
