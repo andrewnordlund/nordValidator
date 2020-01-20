@@ -2,22 +2,20 @@ if (typeof (nordValidator) == "undefined") {
 	var nordValidator = {};
 }
 var nordValidator = {
-	dbug : false,
+	dbug : true,
 	loaded : false,
 	postLoad : [],
 	options : {
-		"member" : false,
-		"cfid" : null,
-		"syncFormURL" : nordburg.cloudSyncURL,
+		"validatorURL" : "https://validator.w3.org/nu/",
 		"dbug": nordValidator.dbug
 	},
 	init : function () {
 
 	}, // End of init
 	save : function (callback) {
-		var saving = browser.storage.local.set({"nordValidator": nordValidator./*something*/});
-		if (nordValidator.dbug) console.log ("Saved.  Gonna handle promises now.  Callback: "  + callback + ", typeof callback: " + typeof(callback) + ".");
-		if (callback) saving.then(callback, nordValidator.errorFun);
+		//var saving = browser.storage.local.set({"nordValidator": nordValidator./*something*/});
+		//if (nordValidator.dbug) console.log ("Saved.  Gonna handle promises now.  Callback: "  + callback + ", typeof callback: " + typeof(callback) + ".");
+		//if (callback) saving.then(callback, nordValidator.errorFun);
 	}, // End of save
 	getSaved : function (success, failure) {
 		var getting = browser.storage.local.get("nordValidator");
@@ -49,7 +47,7 @@ var nordValidator = {
 		var callback = null;
 		if (arguments.length > 1 ) callback = arguments[1];
 
-		/* Something */ = savedObj;
+		// /* Something */ = savedObj;
 		
 		if (callback && typeof callback != "undefined") callback();
 	}, // End of getSavedFromJSON
@@ -67,7 +65,6 @@ var nordValidator = {
 				console.log("Got cloudFile...");
 				console.log(cloudFile);
 				console.log("Of type " + typeof(cloudFile) + ".");
-			}
 			}
 			nordValidator.getSavedFromJSON(cloudFile, function () {
 				if (nordValidator.dbug) console.log ("Saving in nordValidator-temp.");

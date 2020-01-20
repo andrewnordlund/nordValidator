@@ -12,20 +12,10 @@
 		<header><h1>Nordburg Validator</h1></header>
 		<main>
 			<section id="optionsSection">
-			<h2>Options</h2>
-
-			</section>
-			<section id="membersSection">
-				<h2>Nordburg Members Options</h2>
-				<!-- Further options: member, cfID -->
+				<h2>Options</h2>
 				<div>
-					<input type="checkbox" name="memberChk" id="memberChk">
-					<label for="memberChk">Member of Nordburg.ca</label>
-				</div>
-				<div class="fieldHolder">
-					<label for="cfIDtxt">Cloud File ID</label>
-					<input type="number" name="cfIDtxt" id="cfIDtxt" aria-describedby="cfIDdesc" min="0">
-					<p id="cfIDdesc">To find the Cloud File ID go to <a href="https://www.nordburg.ca/misc/cloud.php">The Nordburg Cloud File System</a>.</p>
+					<label for="validatorURLTxt">Validator URL:</label>
+					<input id="validatorURLTxt" name="validatorURLTxt">
 				</div>
 			</section>
 			<section id="devSection">
@@ -34,10 +24,6 @@
 				<div>
 					<input type="checkbox" name="dbugChk" id="dbugChk">
 					<label for="dbugChk">Debugging</label>
-				</div>
-				<div>
-					<label for="syncURL">URL for Syncing</label>
-					<input type="url" id="syncURL" name="syncURL" size="50">
 				</div>
 			</section>
 			<div id="buttonsHolder">

@@ -35,6 +35,12 @@
             "38": "icons/nordValidator-38.png"
         }
     },
+    "content_scripts" : [
+		{
+		"matches": [ "<all_urls>" ],
+		"js": [ "libs/nordburg.js", "libs/nordValidator.js", "content_scripts/nordValidator-cs.js" ]
+	}
+    ],
     "options_ui": {
         "page": "options/nordValidator-options.html"
     }
