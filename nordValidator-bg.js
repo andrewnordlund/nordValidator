@@ -35,7 +35,9 @@ var nordValidatorBG = {
 			nordValidator.options = message["options"];
 			nordValidatorBG.dbug = nordValidator.options["dbug"];
 			nordValidator.dbug = nordValidator.options["dbug"];
-		} /*else if (message["task"] == "close") {
+		} else if (message["task"] == "validate") {
+			if (nordValidatorBG.dbug) console.log ("Validating: " + message["content"]);
+		}/*else if (message["task"] == "close") {
 			// close the window
 			var q = browser.tabs.query({title : "/* Some title * /"});
 			q.then(function (tabs) {
