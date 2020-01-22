@@ -14,20 +14,82 @@ var nordValidatorCS = {
 		// Do like the bookmarklet and create a textnode and form to submit to the validator, or
 		// Gather the contents into a variable, send to the BG script, and have it send the data.  This one may be the necessary one.
 		
-		var body, validForm, showSource, contentTA = null;
+		var body, validForm, showSource, out, contentTA = null;
 		var contents = "";
 		contents = nordValidatorCS.gatherContent();
+		
 		body = document.getElementsByTagName("body")[0];
 
+		/*		
 		validForm = document.getElementById("validForm");
 		showSource = document.getElementById("showSource");
 		contentTA = document.getElementById("contentTA");
+		out = document.getElementById("out");
+		browser.runtime.sendMessage({"msg":"Please validate this.","task":"validate","content":contents});
 
 		if (!validForm) validForm = nordburg.createHTMLElement(document, "form", {"method":"POST", "action":nordValidator.options.validatorURL, "enctype":"multipart/form-data", "acceptCharset":"utf-8","parentNode":body, "id":"validForm"});
 		if (!showSource) showSource = nordburg.createHTMLElement(document, "input", {"type":"hidden", "id":"showSource", "name":"showsource", "value":"yes", "parentNode":validForm});
+		if (!out) out = nordburg.createHTMLElement(document, "input", {"type":"hidden", "id":"out", "name":"out", "value":"json", "parentNode":validForm});
 		if (!contentTA) contentTA = nordburg.createHTMLElement(document, "textarea", {"textNode":contents, "parentNode":validForm, "name":"content", "id":"contentTA"});
+		*/
+		
+		var http = new XMLHttpRequest();
+		http.open("POST", nordValidator.options.validatorURL, true);
+		var fd = new FormData();
+		fd.append("content", contents);
+		fd.append("showsource","yes");
+		fd.append("showoutline","yes");
+		
+		
+		http.send(fd);
+		//var sBoundary = "---------------------------" + Date.now().toString(16);
 
+		//http.setRequestHeader("Content-type","text/html; charset=UTF-8");
+		//http.setRequestHeader("enctype","multipart/form-data");
+		//http.setRequestHeader("acceptCharset","utf-8");
+		/*
+		var params = contents + "&showsource=yes";
+		//params = params.replace(/%20/g, '+');
+		http.send(params);
+		*/
+		//http.send(new FormData(validForm));
+		if (nordValidatorCS.dbug) console.log ("Just posted to nuValidator.");
+		//if (nordValidatorCS.dbug) console.log ("With params: " + params + ".");
+		http.onload = function() {
+			if (nordValidatorCS.dbug) console.log("with results: " + http.responseText);
+			//if (callback) callback(http.responseText);
+		}
+		
+		/*
+		(function() { 
+			function c(a,b) { 
+				var c=document.createElement("textarea");
+				c.name=a;
+				c.value=b;
+				d.appendChild(c)
+			}
+			var e=function(a) {
+				for(var b="",a=a.firstChild;a;) {
+					switch(a.nodeType) {
+						case Node.ELEMENT_NODE:b+=a.outerHTML;break;case Node.TEXT_NODE:b+=a.nodeValue;break;case Node.CDATA_SECTION_NODE:b+="<![CDATA["+a.nodeValue+"]]\>";break;case Node.COMMENT_NODE:b+="<\!--"+a.nodeValue+"--\>";break;
+						case Node.DOCUMENT_TYPE_NODE:b+="<!DOCTYPE "+a.name+">\n"
+					}
+				a=a.nextSibling
+				}
+				return b
+			}(document),
+				d=document.createElement("form");
+			d.method="POST";
+			d.action="https://validator.w3.org/nu/";
+			d.enctype="multipart/form-data";
+			d.target="_blank";
+			d.acceptCharset="utf-8";
+			c("showsource","yes");c("out","json");c("content",e);
+			document.body.appendChild(d);d.submit()})();
 
+		*/
+		// Note:  You cannot do this.  It will trigger an infinite loop of checking
+		// validForm.submit();
 		
 /*
 (function(){
