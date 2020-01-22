@@ -3,6 +3,7 @@ var nordValidatorCS = {
 	loggedIn : false,
 	usingTmp : false,
 	stat : null,
+	hash : null,
 	init : function () {
 		// Should I do something here?
 		//
@@ -130,11 +131,13 @@ var nordValidatorCS = {
 	}, // End of startProcess
 	gatherContent : function () {
 		var contents=[];
+		var tags = [];
 		console.log ("firstSibling: "  + document.firstChild.nodeType +", and childNodes[0]: " + document.childNodes[0].nodeType + ".");
 		for (var i = 0; i < document.childNodes.length; i++) {
 			if (i == 0) console.log ("i:0 nodeType: " + document.childNodes[i].nodeType);
 			if (document.childNodes[i].nodeType == Node.ELEMENT_NODE) {
 				contents.push(document.childNodes[i].outerHTML);
+				tags.push(document.childNodes[i].outerHTML);
 			} else if (document.childNodes[i].nodeType == Node.TEXT_NODE) {
 				contents.push(document.childNodes[i].nodeValue);
 			} else if (document.childNodes[i].nodeType == 10) {
