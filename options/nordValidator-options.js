@@ -3,7 +3,7 @@ if (typeof(nordValidatorOpts) == undefined) {
 }
 
 var nordValidatorOpts = {
-	dbug : true,
+	dbug : false,
 	downkeys : {"d" : null,
 		"n" : null},
 	usingTmp : false,
@@ -81,11 +81,8 @@ var nordValidatorOpts = {
 	}, // End of save
 	saveOptions : function () {
 		// Gather options from the form
-		nordValidator.options["member"] = nordValidatorOpts.controls["memberChk"].checked;
-		nordValidator.options["cfid"] = nordValidatorOpts.controls["cfIDtxt"].value;
+		nordValidator.options["validatorURL"] = nordValidatorOpts.controls["validatorURLTxt"].value;
 		nordValidator.options["dbug"] = nordValidatorOpts.controls["dbugChk"].checked;
-		nordValidator.options["syncFormURL"] = nordValidatorOpts.controls["syncURL"].value;
-
 
 		browser.storage.local.set({"nordValidatorOptions": nordValidator.options}).then(function () { if (nordValidator.options["dbug"]) console.log ("Saved!");}, nordValidator.errorFun);
 		browser.runtime.sendMessage({"msg":"Updating options", "task" : "updateOptions", "options" : nordValidator.options});
@@ -118,10 +115,6 @@ var nordValidatorOpts = {
 				if (!nordValidatorOpts.downkeys["d"]) {
 					nordValidatorOpts.downkeys["d"] = (new Date()).getTime();
 				}
-			} else if (e.keyCode == 78) {
-				if (!nordValidatorOpts.downkeys["n"]) {
-					nordValidatorOpts.downkeys["n"] = (new Date()).getTime();
-				}
 			}
 		}
 	}, // End of checkKeys
@@ -139,13 +132,6 @@ var nordValidatorOpts = {
 					nordValidatorOpts.showDevSection();
 				}
 				nordValidatorOpts.downkeys["d"] = null;
-			} else if (e.keyCode == 78) {
-				var eTime = keyUpTime - nordValidatorOpts.downkeys["n"];
-				if (eTime > 900) {
-					// toggle member section
-					nordValidatorOpts.showMembersSection();
-				}
-				nordValidatorOpts.downkeys["n"] = null;
 			}
 		}
 		
@@ -157,15 +143,11 @@ var nordValidatorOpts = {
 			nordValidatorOpts.controls["devSection"].style.display = "none";
 		}
 	}, // End of showDevSection
-	showMembersSection : function () {
-		if (nordValidatorOpts.controls["membersSection"].style.display == "none" || nordValidatorOpts.controls["membersSection"].style.display == "") {
-			nordValidatorOpts.controls["membersSection"].style.display = "block";
-		} else {
-			nordValidatorOpts.controls["membersSection"].style.display = "none";
-		}
-	}, // End of showMemberSection
 }
 if (nordValidatorOpts.dbug) console.log ("nordValidatorOpts loaded.");
 
-nordValidator.addToPostLoad([function () {nordValidatorOpts.dbug = nordValidator.dbug;}]);
+nordValidator.addToPostLoad([function () {
+	nordValidatorOpts.dbug = nordValidator.dbug;
+	if (nordValidatorOpts.dbug) nordValidatorOpts.controls["devSection"].style.display = "block";
+}]);
 nordValidatorOpts.init();

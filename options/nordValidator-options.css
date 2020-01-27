@@ -1,3 +1,9 @@
 #devSection {
 	display: none;
 }
+#validatorURLTxt {
+	width: 30em;
+}
+#optionsSection div {
+	margin: 1em 0;
+}

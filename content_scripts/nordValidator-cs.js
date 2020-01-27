@@ -227,8 +227,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 	startup : function () {
 	}, // End of startup
 	notify : function (message, sender, sendMessage) {
-		//if (nordValidatorCS.dbug) 
-			console.log ("nordValidator-cs::Got a task: " + message["task"] + "."); // from " + message["pageURL"]);
+		if (nordValidatorCS.dbug) console.log ("nordValidator-cs::Got a task: " + message["task"] + "."); // from " + message["pageURL"]);
 		
 		   // deal with tasks here
 		if (message["task"] == "getStatus") {
