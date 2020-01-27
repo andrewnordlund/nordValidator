@@ -159,16 +159,40 @@ var nordValidatorCS = {
 	dealWithResults : function (results) {
 		if (nordValidatorCS.dbug) console.log("with results: " + results);
 		results = JSON.parse(results);
-		if (results.messages.length == 0) {
-			// it's valid
-			if (nordValidatorCS.dbug) console.log ("Hey it's valid!");
-			nordValidatorCS.stat = "valid";
-		} else {
-			// it's not valid.  Remove non-4.1.1 issues
+		var badErrors = ["tag seen","Stray end tag","Bad start tag","violates nesting rules","Duplicate ID","first occurrence of ID","Unclosed element","not allowed as child of element","unclosed elements","not allowed on element","unquoted attribute value","Duplicate attribute"];
+		var badErrorsRS = badErrors.join("|");
+		var realErrors = [];
+
+		for (var i = 0; i < results.messages.length; i++) {
+			if (results.messages[i]["message"].match(badErrorsRS)) {
+				realErrors.push(results.messages[i]);
+			}
+		}
+		if (realErrors.length > 0) {
 			if (nordValidatorCS.dbug) console.log ("Hey it's not valid!");
 			nordValidatorCS.stat = "invalid";
-
+		} else {
+			if (nordValidatorCS.dbug) console.log ("Hey it's valid!");
+			nordValidatorCS.stat = "valid";
 		}
+		/*
+		 javascript:(function(){var%20filterStrings=
+["tag seen",
+"Stray end tag",
+"Bad start tag",
+"violates nesting rules",
+"Duplicate ID",
+"first occurrence of ID",
+"Unclosed element",
+"not allowed as child of element",
+"unclosed elements",
+"not allowed on element",
+"unquoted attribute value",
+"Duplicate attribute"];
+var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("results");if(!root){return;}%20var%20results=root.getElementsByTagName("li");var%20result,resultText;for(var%20i=0;i<results.length;i++){result=results[i];if(results[i].className!==""){resultText=(result.innerText!==undefined?result.innerText:result.textContent)+"";if(resultText.match(filterRE)===null){result.style.display="none";result.className=result.className+"%20steveNoLike";}}}})();
+
+			javascript:(function(){var%20removeNg=true;var%20filterStrings=["tag%20seen","Stray%20end%20tag","Bad%20start%20tag","violates%20nesting%20rules","Duplicate%20ID","first%20occurrence%20of%20ID","Unclosed%20element","not%20allowed%20as%20child%20of%20element","unclosed%20elements","not%20allowed%20on%20element","unquoted%20attribute%20value","Duplicate%20attribute"];var%20filterRE,root,results,result,resultText,i,cnt=0;filterRE=filterStrings.join("|");root=document.getElementById("results");if(!root){alert("No%20results%20container%20found.");return}results=root.getElementsByTagName("li");for(i=0;i<results.length;i++){result=results[i];if(result.className!==""){resultText=(result.innerText!==undefined?result.innerText:result.textContent)+"";if(resultText.match(filterRE)===null){result.style.display="none";result.className=result.className+"%20steveNoLike";cnt++}else%20if(removeNg==true){if(resultText.indexOf("not%20allowed%20on%20element")!==-1&&resultText.indexOf("ng-")!==-1){result.style.display="none";result.className=result.className+"%20steveNoLike";cnt++}}}}alert("Complete.%20"+cnt+"%20items%20removed.")})();
+		 */
 		if (nordValidatorCS.returnFun) nordValidatorCS.returnFun();
 	}, // End of dealWithResults
 	gatherContent : function () {
