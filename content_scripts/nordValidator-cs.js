@@ -1,9 +1,13 @@
+console.log ("STaring with nordValidatorCS.");
+if (typeof (nordValidatorCS) == "undefined") {
+	var nordValidatorCS = {};
+}
+
 var nordValidatorCS = {
 	dbug : nordValidator.dbug,
-	loggedIn : false,
-	usingTmp : false,
 	stat : null,
 	hash : null,
+	returnFun : null,
 	init : function () {
 		// Should I do something here?
 		//
@@ -12,37 +16,52 @@ var nordValidatorCS = {
 	startProcess : function () {
 		// gather contents
 		// Two options here:
-		// Do like the bookmarklet and create a textnode and form to submit to the validator, or
+		// Do like the bookmarklet and create a textarea and form to submit to the validator, or
 		// Gather the contents into a variable, send to the BG script, and have it send the data.  This one may be the necessary one.
 		
+		nordValidatorCS.stat = "waiting";
+
 		var body, validForm, showSource, out, contentTA = null;
 		var contents = "";
 		contents = nordValidatorCS.gatherContent();
 		
 		body = document.getElementsByTagName("body")[0];
 
-		/*		
+		nordValidatorCS.sendForm(contents);
+	}, // End of startProcess
+	sendForm : function (contents) {
+		
+		// Just send form data randomly.  For some reason the json part isn't working.
+		if (nordValidatorCS.dbug) console.log ("Creating a faux-form and submitting it.");
+		var http = new XMLHttpRequest();
+		http.open("POST", nordValidator.options.validatorURL, true);
+		var fd = new FormData();
+		fd.append("out", "json");
+		fd.append("showsource","yes");
+		fd.append("content", contents);
+		//fd.append("showoutline","yes");
+		
+		http.send(fd);
+		http.onload = function () {
+			nordValidatorCS.dealWithResults(http.responseText);
+		}
+		//http.addEventListener("load", nordValidatorCS.dealWithResults, false);
+		
+	}, // End of sendForm
+	makeAndSendForm : function (contents) {
+		// Create a form and submit
 		validForm = document.getElementById("validForm");
 		showSource = document.getElementById("showSource");
 		contentTA = document.getElementById("contentTA");
 		out = document.getElementById("out");
-		browser.runtime.sendMessage({"msg":"Please validate this.","task":"validate","content":contents});
+		//browser.runtime.sendMessage({"msg":"Please validate this.","task":"validate","content":contents});
 
 		if (!validForm) validForm = nordburg.createHTMLElement(document, "form", {"method":"POST", "action":nordValidator.options.validatorURL, "enctype":"multipart/form-data", "acceptCharset":"utf-8","parentNode":body, "id":"validForm"});
 		if (!showSource) showSource = nordburg.createHTMLElement(document, "input", {"type":"hidden", "id":"showSource", "name":"showsource", "value":"yes", "parentNode":validForm});
 		if (!out) out = nordburg.createHTMLElement(document, "input", {"type":"hidden", "id":"out", "name":"out", "value":"json", "parentNode":validForm});
 		if (!contentTA) contentTA = nordburg.createHTMLElement(document, "textarea", {"textNode":contents, "parentNode":validForm, "name":"content", "id":"contentTA"});
-		*/
 		
-		var http = new XMLHttpRequest();
-		http.open("POST", nordValidator.options.validatorURL, true);
-		var fd = new FormData();
-		fd.append("content", contents);
-		fd.append("showsource","yes");
-		fd.append("showoutline","yes");
-		
-		
-		http.send(fd);
+
 		//var sBoundary = "---------------------------" + Date.now().toString(16);
 
 		//http.setRequestHeader("Content-type","text/html; charset=UTF-8");
@@ -53,12 +72,20 @@ var nordValidatorCS = {
 		//params = params.replace(/%20/g, '+');
 		http.send(params);
 		*/
-		//http.send(new FormData(validForm));
+
+
+		// Submit the above form
+		var http = new XMLHttpRequest();
+		http.open("POST", nordValidator.options.validatorURL, true);
+		http.send(new FormData(validForm));
+
+
+
 		if (nordValidatorCS.dbug) console.log ("Just posted to nuValidator.");
+		if (nordValidatorCS.dbug) console.log ("Contents: " + contents);
 		//if (nordValidatorCS.dbug) console.log ("With params: " + params + ".");
-		http.onload = function() {
-			if (nordValidatorCS.dbug) console.log("with results: " + http.responseText);
-			//if (callback) callback(http.responseText);
+		http.onload = function () {
+			nordValidatorCS.dealWithResults(http.responseText);
 		}
 		
 		/*
@@ -128,8 +155,27 @@ var nordValidatorCS = {
 		// Set stat
 		
 		// Tell the boss to change the icon
-	}, // End of startProcess
+	}, // End of makeAndSendForm
+	dealWithResults : function (results) {
+		if (nordValidatorCS.dbug) console.log("with results: " + results);
+		results = JSON.parse(results);
+		if (results.messages.length == 0) {
+			// it's valid
+			if (nordValidatorCS.dbug) console.log ("Hey it's valid!");
+			nordValidatorCS.stat = "valid";
+		} else {
+			// it's not valid.  Remove non-4.1.1 issues
+			if (nordValidatorCS.dbug) console.log ("Hey it's not valid!");
+			nordValidatorCS.stat = "invalid";
+
+		}
+		if (nordValidatorCS.returnFun) nordValidatorCS.returnFun();
+	}, // End of dealWithResults
 	gatherContent : function () {
+		var contents = "<!DOCTYPE ";
+		contents += document.doctype.name + ">\n" + document.documentElement.outerHTML;
+		return contents;
+		/*
 		var contents=[];
 		var tags = [];
 		console.log ("firstSibling: "  + document.firstChild.nodeType +", and childNodes[0]: " + document.childNodes[0].nodeType + ".");
@@ -151,17 +197,29 @@ var nordValidatorCS = {
 		//if (nordValidator.dbug) console.log ("Got contents: " + contents + ".");
 
 		return contents.join("\n");
+		*/
 
 	}, // End of gatherContent
 	startup : function () {
 	}, // End of startup
-	notify : function (message) {
-		if (nordValidatorCS.dbug) console.log ("cmx::Got a message: " + message["msg"] + ", task: " + message["task"] + "."); // from " + message["pageURL"]);
-		/* 
+	notify : function (message, sender, sendMessage) {
+		//if (nordValidatorCS.dbug) 
+			console.log ("nordValidator-cs::Got a task: " + message["task"] + "."); // from " + message["pageURL"]);
+		
 		   // deal with tasks here
-		if (message["task"] == "someTask") {
+		if (message["task"] == "getStatus") {
+			if (nordValidatorCS.dbug) console.log ("nordValidator-cs::sending back a stat of " + nordValidatorCS.stat + ".");
+			sendMessage({"task":"updateIcon", "status":nordValidatorCS.stat});
+			if (nordValidatorCS.stat == "waiting") {
+				nordValidatorCS.returnFun = function () {
+					browser.runtime.sendMessage({"msg":"Please validate this.","task":"changeIcon","status":nordValidatorCS.stat});
+					nordValidatorCS.returnFun = null;
+				}
+			}
+		} else {
+			sendMessage({"task":"updateIcon", "status":"error"});
 		}
-		*/
+		
 	}, // End of notify
 }
 /*
@@ -196,10 +254,17 @@ document.addEventListener("DOMContentLoaded", function () {
 }, false);
 */
 browser.runtime.onMessage.addListener(nordValidatorCS.notify);
-if (nordValidatorCS.dbug) console.log ("nordValidatorCS.js loaded.");
+//if (nordValidatorCS.dbug)
+       	console.log ("nordValidatorCS.js loaded.");
 nordValidator.addToPostLoad([function () {
 	if (nordValidatorCS.dbug === false && nordValidator.dbug === true) console.log ("turning nordValidatorCS.dbug on.");
 	nordValidatorCS.dbug = nordValidator.dbug;
 }]);
 
-if (document.location.href.match(/http/i)) nordValidatorCS.init();
+//if (document.location.href.match(/^http/i)) 
+nordValidatorCS.init();
+/*
+document.addEventListener("DOMContentLoaded", function () {
+	if (nordValidatorCS.dbug) console.log ("Content loaded, starting process.");
+	if (document.location.href.match(/http/i)) nordValidatorCS.init();
+});*/

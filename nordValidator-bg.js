@@ -6,8 +6,8 @@ var nordValidatorBG = {
 	dbug : nordValidator.dbug,
 	init : function () {
 	}, // End of init
-	changeIcon : function (stat) {
-		if (nordValidatorBG.dbug) console.log ("changeIcon::About to change the icon.");
+	changeIcon : function (stat, tabs) {
+		if (nordValidatorBG.dbug) console.log ("changeIcon::About to change the icon to " + stat +".");
 		browser.tabs.query({active: true, currentWindow: true}, function(tabs) {
 		
 			switch (stat) {
@@ -23,13 +23,46 @@ var nordValidatorBG = {
 				case "error":
 					browser.browserAction.setIcon({path: "icons/err-19.png", tabId: tabs[0].id});
 					break;
+				case "inactive":
+					browser.browserAction.setIcon({path: "icons/inactive-19.png", tabId: tabs[0].id});
+					break;
+
 			}
 		});
 	}, // End of changeIcon
+	getStatus : function () {
+		browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
+			//if (tabs[0]) {
+				if (tabs[0].url.match(/^https?:\/\//)) {
+					if (nordValidatorBG.dbug) console.log ("nordValidatorBG::sending message to " + tabs[0].title + " to get Status.");
+					browser.tabs.sendMessage(tabs[0].id, {task: "getStatus"}).then(function (msg) {
+						if (nordValidatorBG.dbug) console.log ("Promis fulfilled.");
+						nordValidatorBG.changeIcon(msg["status"]);
+					}, nordValidator.errorFun).catch(function (x) {
+						if (nordValidatorBG.dbug) console.log ("Caught something: " + x.toString());
+						if (x.toString() == "Error: Could not establish connection. Receiving end does not exist." || x.toString() == "TypeError: msg is undefined") {
+							browser.tabs.executeScript(tabs[0].id, {file : "/libs/nordburg.js"}).then (function () {
+								browser.tabs.executeScript(tabs[0].id, {file : "/libs/nordValidator.js"}).then(function () {
+									browser.tabs.executeScript(tabs[0].id, {file : "/content_scripts/nordValidator-cs.js"}).then(function () {
+										browser.tabs.sendMessage(tabs[0].id, {task : "getStatus"}).then(function (msg) {
+											if (nordValidatorBG.dbug) console.log ("Promise eventually fulfilled.");
+											nordValidatorBG.changeIcon(msg["status"]);
+										}, nordValidator.errorFun);
+									}, nordValidator.errorFun);
+								}, nordValidator.errorFun);
+							}, nordValidator.errorFun);
+						}
+					});
+				} else {
+					nordValidatorBG.changeIcon("inactive", tabs);
+				}
+			//}
+		}, nordValidator.errorFun);
+	}, // End of getStatus
 	notify : function (message, sender, sendResponse) {
 		if (nordValidatorBG.dbug) console.log ("nordValidatorBG::Got a message: " + (message.hasOwnProperty("msg") ? message["msg"] : "[no msg]") + " with task: " + message["task"] + " with sender " + sender + " and sendResponse " + sendResponse + ".");
 		if (message["task"] == "changeIcon") {
-			if (nordValidatorBG.dbug) console.log ("nordValidatorBG::Gonna change icon to " + message["status"] + ".");
+			if (nordValidatorBG.dbug) console.log ("nordValidatorBG::Gonna change icon to " + message["status"] + + " from " + sender + ".");
 			nordValidatorBG.changeIcon(message["status"]);
 		} else if (message["task"] == "updateOptions") {
 			nordValidator.options = message["options"];
@@ -54,11 +87,48 @@ var nordValidatorBG = {
 }
 
 var activeListenerFun = function (activeInfo) {
-	console.log ("Active!");
-	nordValidatorBG.changeIcon("waiting");
+	if (nordValidatorBG.dbug) console.log ("nordValidator-bg::tab " + nordburg.getKeys(activeInfo).join(", ") + "."); //"(" + changeInfo.url + "/" + changeInfo.title + "(" + changeInfo.status + ")) has been updated to " + tabInfo.url +"/"+tabInfo.title +"(" + tabInfo.status + ").");
+	browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
+		if (tabs[0]) {
+			nordValidatorBG.changeIcon("waiting");
+			nordValidatorBG.getStatus();
+		/*
+			if (tabs[0].url.match(/^https?:\/\//)) {
+				if (nordValidatorBG.dbug) console.log ("nordValidatorBG::sending message to get validity.");
+				browser.tabs.sendMessage(tabs[0].id, {"task": "getStatus"}).then(function (msg) {
+					nordValidatorBG.changeIcon(msg["status"]);
+				}, nordValidator.errorFun);
+			} else {
+				nordValidatorBG.changeIcon("inactive");
+			}
+		*/
+		}
+	}, nordValidator.errorFun);
+	
+}
+
+var updateListenerFun = function (tabId, changeInfo, tabInfo) {
+	//if (nordValidatorBG.dbug) console.log ("nordValidator-bg::tab " + tabId + "(" + changeInfo.url + "/" + changeInfo.title + "(" + changeInfo.status + ")) has been updated to " + tabInfo.url +"/"+tabInfo.title +"(" + tabInfo.status + ").");
+	if (tabInfo.url.match(/^https?:\/\//i)) {
+		if (tabInfo.status == "complete" && changeInfo.status == "complete") {
+			if (nordValidatorBG.dbug) console.log ("nordValidator-bg::Finally complete.  Hopefully thing should be done by now.  Sending to tabId: " + tabId);
+			nordValidatorBG.changeIcon("waiting");
+			nordValidatorBG.getStatus();
+			//browser.tabs.sendMessage(tabId, {task: "getStatus"});.then(function (msg) {
+			//	nordValidatorBG.changeIcon(msg["status"]);
+			//}, nordValidator.errorFun);*/
+		} else {
+			nordValidatorBG.changeIcon("waiting");
+		}
+	} else {
+		nordValidatorBG.changeIcon("inactive");
+	}
 }
 
 browser.tabs.onActivated.addListener(activeListenerFun);
+
+browser.tabs.onUpdated.addListener(updateListenerFun);
+
 
 //browser.tabs.onActivated.addListener(function (activeInfo) {
 	//nordValidatorBG.changeIcon("waiting");
@@ -74,6 +144,7 @@ browser.tabs.onActivated.addListener(activeListenerFun);
 //});
 
 browser.browserAction.onClicked.addListener(nordValidatorBG.init);
+
 browser.runtime.onMessage.addListener(nordValidatorBG.notify);
 nordValidator.addToPostLoad([function () {
 	if (nordValidatorBG.dbug) console.log ("setting nordValidatorBG.dbug to " + nordValidator.dbug + ".");
