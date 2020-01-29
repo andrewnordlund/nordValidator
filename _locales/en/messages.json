@@ -10,5 +10,22 @@
     "defaultTitle": {
         "message": "NordValidator",
         "description": "What's shown in the mouse-over."
+    },
+    "validMessage" : {
+	    "message" : "Valid",
+	    "description" : "What's shown when a page is valid"
+    },
+    "errorMessage" : {
+	    "message": "Error",
+	    "description" : "There's been an error"
+    },
+    "waitingMessage" : {
+	    "message": "Waiting",
+	    "description" : "Waiting..."
+    },
+    "warningLetter" : {
+	    "message": "W",
+	    "description" : "What shows after the warning count"
     }
+    
 }

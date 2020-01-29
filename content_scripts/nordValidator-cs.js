@@ -6,6 +6,8 @@ if (typeof (nordValidatorCS) == "undefined") {
 var nordValidatorCS = {
 	dbug : nordValidator.dbug,
 	stat : null,
+	errCnt : 0,
+	warningCnt : 0,
 	hash : null,
 	returnFun : null,
 	init : function () {
@@ -25,7 +27,7 @@ var nordValidatorCS = {
 		var contents = "";
 		contents = nordValidatorCS.gatherContent();
 		
-		body = document.getElementsByTagName("body")[0];
+		//body = document.getElementsByTagName("body")[0];
 
 		nordValidatorCS.sendForm(contents);
 	}, // End of startProcess
@@ -162,19 +164,27 @@ var nordValidatorCS = {
 		var badErrors = ["tag seen","Stray end tag","Bad start tag","violates nesting rules","Duplicate ID","first occurrence of ID","Unclosed element","not allowed as child of element","unclosed elements","not allowed on element","unquoted attribute value","Duplicate attribute"];
 		var badErrorsRS = badErrors.join("|");
 		var realErrors = [];
+		var warnings = [];
 
 		for (var i = 0; i < results.messages.length; i++) {
-			if (results.messages[i]["message"].match(badErrorsRS)) {
-				realErrors.push(results.messages[i]);
+			if (results.messages[i]["type"] == "error") {
+				if (results.messages[i]["message"].match(badErrorsRS)) {
+					realErrors.push(results.messages[i]);
+				}
+			} else if (results.messages[i]["type"] == "info" && results.messages[i]["subType"] == "warning") {
+				warnings.push(results.messages[i]);
 			}
 		}
 		if (realErrors.length > 0) {
-			if (nordValidatorCS.dbug) console.log ("Hey it's not valid!");
+			if (nordValidatorCS.dbug) console.log ("Hey it's not valid! with an error count of " + realErrors.length +  " and a warning count of " + warnings.length + ".");
 			nordValidatorCS.stat = "invalid";
 		} else {
 			if (nordValidatorCS.dbug) console.log ("Hey it's valid!");
 			nordValidatorCS.stat = "valid";
 		}
+		nordValidatorCS.errCnt = realErrors.length;
+		nordValidatorCS.warningCnt = warnings.length;
+
 		/*
 		 javascript:(function(){var%20filterStrings=
 ["tag seen",
@@ -232,15 +242,16 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		   // deal with tasks here
 		if (message["task"] == "getStatus") {
 			if (nordValidatorCS.dbug) console.log ("nordValidator-cs::sending back a stat of " + nordValidatorCS.stat + ".");
-			sendMessage({"task":"updateIcon", "status":nordValidatorCS.stat});
+			sendMessage({"task":"updateIcon", "status":nordValidatorCS.stat, "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
 			if (nordValidatorCS.stat == "waiting") {
 				nordValidatorCS.returnFun = function () {
-					browser.runtime.sendMessage({"msg":"Please validate this.","task":"changeIcon","status":nordValidatorCS.stat});
+					if (nordValidatorCS.dbug) console.log ("Unilaterally sending message to -bg of status" + nordValidatorCS.stat + ", erorCount: " + nordValidatorCS.errCnt + ", and warningCount of " + nordValidatorCS.warningCnt + ".");
+					browser.runtime.sendMessage({"msg":"Please validate this.", "task":"changeIcon", "status":nordValidatorCS.stat, "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
 					nordValidatorCS.returnFun = null;
 				}
 			}
 		} else {
-			sendMessage({"task":"updateIcon", "status":"error"});
+			sendMessage({"task":"updateIcon", "status":"error", "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
 		}
 		
 	}, // End of notify
@@ -285,9 +296,16 @@ nordValidator.addToPostLoad([function () {
 }]);
 
 //if (document.location.href.match(/^http/i)) 
-nordValidatorCS.init();
+document.addEventListener("readystatechange", function () {
+	console.log ("readystate: " + document.readyState)
+	if (document.readyState == "complete") nordValidatorCS.init();
+}, false);
+//setTimeout (nordValidatorCS.init, 20000);
+
+// For some reason, this doesn't seem to work.  Maybe because the script is injected too late.
 /*
 document.addEventListener("DOMContentLoaded", function () {
 	if (nordValidatorCS.dbug) console.log ("Content loaded, starting process.");
 	if (document.location.href.match(/http/i)) nordValidatorCS.init();
-});*/
+});
+*/

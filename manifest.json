@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "__MSG_extensionName__",
     "description": "__MSG_extensionDescription__",
-    "version": "0.0.1",
+    "version": "0.0.2-a2",
     "homepage_url": "https://www.nordburg.ca/ext/home.php",
     "icons": {
         "48": "icons/nordValidator-48.png",
@@ -40,7 +40,7 @@
 		{
 		"matches": [ "<all_urls>" ],
 		"js": [ "libs/nordburg.js", "libs/nordValidator.js", "content_scripts/nordValidator-cs.js" ],
-		"run_at" : "document_end"
+		"run_at" : "document_start"
 	}
     ],
     "options_ui": {
