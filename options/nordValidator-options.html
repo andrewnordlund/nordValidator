@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Nordburg Validator</title>
+		<link rel="Stylesheet" type="text/css" href="nordValidator-options.css">
+		<link rel="Stylesheet" type="text/css" href="/libs/nordburg.css">
+			<script src="/libs/nordburg.js"></script>
+		<script src="/libs/nordValidator.js"></script>
+	</head>
+	<body>
+		<header><h1>Nordburg Validator</h1></header>
+		<main>
+			<section id="optionsSection">
+				<h2>Options</h2>
+				<div>
+					<label for="validatorURLTxt">Validator URL:</label>
+					<input id="validatorURLTxt" name="validatorURLTxt">
+				</div>
+			</section>
+			<section id="devSection">
+				<h2>Developer Options</h2>
+				<!-- dbug -->
+				<div>
+					<input type="checkbox" name="dbugChk" id="dbugChk">
+					<label for="dbugChk">Debugging</label>
+				</div>
+			</section>
+			<div id="buttonsHolder">
+				<button id="saveBtn">Save</button>
+				<button id="cancelBtn">Cancel</button>
+				<button id="restoreDefaultsBtn">Restore Defaults</button>
+				<div id="loggedInButtonsHolderDiv"></div>
+			</div>
+		</main>
+		<footer>
+		</footer>
+		<script src="nordValidator-options.js"></script>
+	<body>
+</html>

@@ -2,18 +2,15 @@ if (typeof(nordValidatorOpts) == undefined) {
 	var nordValidatorOpts = {}
 }
 
-nordValidatorOpts = {
-	dbug : true,
+var nordValidatorOpts = {
+	dbug : false,
 	downkeys : {"d" : null,
 		"n" : null},
 	usingTmp : false,
 	controls : {
-		"membersSection" : null,
-		"memberChk" : null,
-		"cfIDtxt" : null,
+		"validatorURLTxt" : null,
 		"devSection" : null,
 		"dbugChk" : null,
-		"syncURL" : null,
 		"saveBtn" : null,
 		"cancelBtn" : null,
 		"restoreDefaultsBtn" : null
@@ -23,7 +20,7 @@ nordValidatorOpts = {
 		for (var control in nordValidatorOpts.controls) {
 			nordValidatorOpts.controls[control] = document.getElementById(control);
 		}
-		nordValidator.addToPostLoad([nordValidatorOpts.fillValues, nordValidatorOpts./*someFunction*/]);
+		nordValidator.addToPostLoad([nordValidatorOpts.fillValues]);
 		nordValidatorOpts.controls["restoreDefaultsBtn"].addEventListener("click", nordValidatorOpts.restoreDefaults,false);
 		nordValidatorOpts.controls["saveBtn"].addEventListener("click", nordValidatorOpts.save,false);
 		nordValidatorOpts.controls["cancelBtn"].addEventListener("click", nordValidatorOpts.cancel,false);
@@ -35,46 +32,8 @@ nordValidatorOpts = {
 		} else {
 			if (nordValidatorOpts.dbug) console.log ("usingTmp is false.  Not creating Undo button.");
 		}
-		var loggedInButtonsHolderDiv = document.getElementById("loggedInButtonsHolderDiv");
-		if (nordValidator.options.cfid) {
-			if (nordValidatorOpts.dbug) console.log ("You have a cfid, so seeing if you're logged in.");
-			nordburg.amILoggedIn(function (aili) {
-				if (aili) {
-					var doc = document;
-					var buttonsHolder = doc.getElementById("buttonsHolder");
-
-					var uploadButton = nordburg.createOptionsHTMLElement(doc, "input", {"type":"button","value":"Upload","parentNode":loggedInButtonsHolderDiv});
-					uploadButton.addEventListener("click", function () {
-						nordburg.uploadSyncFile(nordValidator.options.cfid, encodeURIComponent(JSON.stringify(nordValidator.cmx)));
-					}, false);
-					var downloadOverwriteBtn = nordburg.createOptionsHTMLElement(doc, "input", {"type":"button","value":"Download and Overwrite","parentNode":loggedInButtonsHolderDiv, "id":"downloadOverwriteBtn"});
-					downloadOverwriteBtn.addEventListener("click", function () {
-						nordValidator.downloadAndOverwrite(function () {
-							//nordValidator.save(nordValidatorOpts./* some function */)
-							// Probably:
-							// Disable the download buttons
-							nordValidatorOpts.disableDownloadButtons();
-							// Add an Undo button
-							nordValidatorOpts.createUndoBtn();
-						});
-
-					}, false);
-					var downloadSyncBtn = nordburg.createOptionsHTMLElement(doc, "input", {"type":"button","value":"Download and Sync","parentNode":loggedInButtonsHolderDiv, "id":"downloadSyncBtn"});
-
-
-					downoadSyncBtn.addEventListener("click", function () {
-						nordValidator.downloadAndSync(function (overwrittenText) {
-							var doneP = nordburg.createOptionsHTMLElement(document, "div", {"id":"doneDiv", "parentNode":loggedInButtonsHolderDiv, "role":"status", "aria-live":"polite", "textNode":overwrittenText});
-							// Disable the download buttons
-							nordValidatorOpts.disableDownloadButtons();
-							// Add an Undo button
-							nordValidatorOpts.createUndoBtn();
-						});
-					},  false);
-				}
-			});
-		}
-	}// End of init
+		
+	}, // End of init
 	createUndoBtn : function () {
 		var undoBtn = null;
 		undoBtn = document.getElementById("undoBtn");
@@ -122,11 +81,8 @@ nordValidatorOpts = {
 	}, // End of save
 	saveOptions : function () {
 		// Gather options from the form
-		nordValidator.options["member"] = nordValidatorOpts.controls["memberChk"].checked;
-		nordValidator.options["cfid"] = nordValidatorOpts.controls["cfIDtxt"].value;
+		nordValidator.options["validatorURL"] = nordValidatorOpts.controls["validatorURLTxt"].value;
 		nordValidator.options["dbug"] = nordValidatorOpts.controls["dbugChk"].checked;
-		nordValidator.options["syncFormURL"] = nordValidatorOpts.controls["syncURL"].value;
-
 
 		browser.storage.local.set({"nordValidatorOptions": nordValidator.options}).then(function () { if (nordValidator.options["dbug"]) console.log ("Saved!");}, nordValidator.errorFun);
 		browser.runtime.sendMessage({"msg":"Updating options", "task" : "updateOptions", "options" : nordValidator.options});
@@ -134,12 +90,7 @@ nordValidatorOpts = {
 	fillValues : function () {
 		if (nordValidatorOpts.dbug) console.log ("Filling form values.");
 		// Fill the forms and stuff
-		if (nordValidator.options["member"] === true) {
-			nordValidatorOpts.controls["memberChk"].setAttribute("checked", "checked");
-			nordValidatorOpts.showMembersSection();
-		}
-		nordValidatorOpts.controls["cfIDtxt"].value = nordValidator.options["cfid"];\
-		nordcmxOpts.controls["syncURL"].value = nordValidator.options.syncFormURL;
+		nordValidatorOpts.controls["validatorURLTxt"].setAttribute("value", nordValidator.options.validatorURL);
 		nordValidatorOpts.dbug = nordValidator.options.dbug;
 		if (nordValidator.options.dbug === true) {
 			nordValidatorOpts.controls["dbugChk"].setAttribute("checked", "checked");
@@ -155,7 +106,7 @@ nordValidatorOpts = {
 		if (nordValidatorOpts.dbug) console.log ("Cancelling and setting stuff back to original values.");
 	}, // End of cancel
 	checkKeys : function (e) {
-		if (nordValidatorOpts.dbug) console.log ("Key down: " + e.keyCode + );
+		if (nordValidatorOpts.dbug) console.log ("Key down: " + e.keyCode + ".");
 		if (e.keyCode == 68 || e.keyCode == 78) {
 			document.removeEventListener("keypressed", nordValidatorOpts.checkKeys);
 			document.addEventListener("keyup", nordValidatorOpts.checkUpKey, false);
@@ -164,11 +115,7 @@ nordValidatorOpts = {
 				if (!nordValidatorOpts.downkeys["d"]) {
 					nordValidatorOpts.downkeys["d"] = (new Date()).getTime();
 				}
-			} else if (e.keyCode == 78) {
-				if (!nordValidatorOpts.downkeys["n"]) {
-					nordValidatorOpts.downkeys["n"] = (new Date()).getTime();
-				}
-		}
+			}
 		}
 	}, // End of checkKeys
 	checkUpKey : function (e) {
@@ -185,13 +132,6 @@ nordValidatorOpts = {
 					nordValidatorOpts.showDevSection();
 				}
 				nordValidatorOpts.downkeys["d"] = null;
-			} else if (e.keyCode == 78) {
-				var eTime = keyUpTime - nordValidatorOpts.downkeys["n"];
-				if (eTime > 900) {
-					// toggle member section
-					nordValidatorOpts.showMembersSection();
-				}
-				nordValidatorOpts.downkeys["n"] = null;
 			}
 		}
 		
@@ -203,12 +143,11 @@ nordValidatorOpts = {
 			nordValidatorOpts.controls["devSection"].style.display = "none";
 		}
 	}, // End of showDevSection
-	showMembersSection : function () {
-		if (nordValidatorOpts.controls["membersSection"].style.display == "none" || nordValidatorOpts.controls["membersSection"].style.display == "") {
-			nordValidatorOpts.controls["membersSection"].style.display = "block";
-		} else {
-			nordValidatorOpts.controls["membersSection"].style.display = "none";
-		}
-	}, // End of showMemberSection
 }
-if (nordValidatorOpts.dbug) console.log ("nordValidatorOpts loaded.");nordValidator.addToPostLoad([function () {nordValidatorOpts.dbug = nordValidator.dbug;}]);
+if (nordValidatorOpts.dbug) console.log ("nordValidatorOpts loaded.");
+
+nordValidator.addToPostLoad([function () {
+	nordValidatorOpts.dbug = nordValidator.dbug;
+	if (nordValidatorOpts.dbug) nordValidatorOpts.controls["devSection"].style.display = "block";
+}]);
+nordValidatorOpts.init();
