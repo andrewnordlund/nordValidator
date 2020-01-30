@@ -2,7 +2,7 @@ console.log ("STaring with nordValidatorCS.");
 if (typeof (nordValidatorCS) == "undefined") {
 	var nordValidatorCS = {};
 }
-
+var start = Date.now();
 var nordValidatorCS = {
 	dbug : nordValidator.dbug,
 	stat : null,
@@ -243,7 +243,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		if (message["task"] == "getStatus") {
 			if (nordValidatorCS.dbug) console.log ("nordValidator-cs::sending back a stat of " + nordValidatorCS.stat + ".");
 			sendMessage({"task":"updateIcon", "status":nordValidatorCS.stat, "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
-			if (nordValidatorCS.stat == "waiting") {
+			if (nordValidatorCS.stat == "waiting" || nordValidatorCS.stat === null) {
 				nordValidatorCS.returnFun = function () {
 					if (nordValidatorCS.dbug) console.log ("Unilaterally sending message to -bg of status" + nordValidatorCS.stat + ", erorCount: " + nordValidatorCS.errCnt + ", and warningCount of " + nordValidatorCS.warningCnt + ".");
 					browser.runtime.sendMessage({"msg":"Please validate this.", "task":"changeIcon", "status":nordValidatorCS.stat, "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
@@ -289,33 +289,44 @@ document.addEventListener("DOMContentLoaded", function () {
 */
 browser.runtime.onMessage.addListener(nordValidatorCS.notify);
 //if (nordValidatorCS.dbug)
+
 nordValidator.addToPostLoad([function () {
 	if (nordValidatorCS.dbug === false && nordValidator.dbug === true) console.log ("turning nordValidatorCS.dbug on.");
 	nordValidatorCS.dbug = nordValidator.dbug;
 }]);
 
-       	console.log ("nordValidatorCS.js loaded: " + new Date().toString());
+       	console.log ("nordValidatorCS.js loaded in " +document.location.href + ": " + new Date().toString());
 //if (document.location.href.match(/^http/i)) 
+/*
 document.addEventListener("readystatechange", function () {
 	//console.log ("readystate: " + document.readyState)
-	if (document.readyState == "complete") console.log ("document.readystate is complete: " + new Date().toString()); //setTimeout (nordValidatorCS.init, 100);
+	if (document.readyState == "complete") console.log ("document.readystate is complete: " + Math.floor(Date.now() - start/1000)); //setTimeout (nordValidatorCS.init, 100);
 }, false);
-
+*/
 //if (document.location.href.match(/^http/i)) setTimeout (nordValidatorCS.init, 100);
 
-
-document.onload = function () {console.log("document.onload")}; //nordValidatorCS.init;
+/*
+ * This doesn't work
+document.onload = function () {console.log("document.onload: " + Math.floor(Date.now() - start/1000))}; //nordValidatorCS.init;
 document.addEventListener("load", function () {
 	//if (nordValidatorCS.dbug) 
-		console.log ("document loaded: " + new Date().toString());
+		console.log ("document loaded: " + Math.floor(Date.now() - start/1000));
 	//if (document.location.href.match(/http/i)) nordValidatorCS.init();
+}, false);
+*/
+
+//window.onload = function () {console.log("window.onload: " + Math.floor(Date.now() - start/1000))}; //nordValidatorCS.init;
+window.addEventListener("load", function () {
+	if (nordValidatorCS.dbug) 
+		console.log ("window loaded: " + Math.floor(Date.now() - start/1000));
+	if (document.location.href.match(/http/i)) setTimeout (nordValidatorCS.init, 5000);
 }, false);
 
 // For some reason, this doesn't seem to work.  Maybe because the script is injected too late.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
 	//if (nordValidatorCS.dbug) 
-		console.log ("DOMContentLoaded: " + new Date().toString());
+		console.log ("DOMContentLoaded: " + Math.floor(Date.now() - start/1000));
 	//if (document.location.href.match(/http/i)) nordValidatorCS.init();
 }, false);
-
+*/
