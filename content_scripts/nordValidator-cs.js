@@ -12,7 +12,7 @@ var nordValidatorCS = {
 	returnFun : null,
 	init : function () {
 		// Should I do something here?
-		//
+		if (nordValidatorCS.dbug) console.log ("Initting");
 		nordValidatorCS.startProcess();
 	}, // End of init
 	startProcess : function () {
@@ -289,23 +289,33 @@ document.addEventListener("DOMContentLoaded", function () {
 */
 browser.runtime.onMessage.addListener(nordValidatorCS.notify);
 //if (nordValidatorCS.dbug)
-       	console.log ("nordValidatorCS.js loaded.");
 nordValidator.addToPostLoad([function () {
 	if (nordValidatorCS.dbug === false && nordValidator.dbug === true) console.log ("turning nordValidatorCS.dbug on.");
 	nordValidatorCS.dbug = nordValidator.dbug;
 }]);
 
+       	console.log ("nordValidatorCS.js loaded: " + new Date().toString());
 //if (document.location.href.match(/^http/i)) 
 document.addEventListener("readystatechange", function () {
-	console.log ("readystate: " + document.readyState)
-	if (document.readyState == "complete") nordValidatorCS.init();
+	//console.log ("readystate: " + document.readyState)
+	if (document.readyState == "complete") console.log ("document.readystate is complete: " + new Date().toString()); //setTimeout (nordValidatorCS.init, 100);
 }, false);
-//setTimeout (nordValidatorCS.init, 20000);
+
+//if (document.location.href.match(/^http/i)) setTimeout (nordValidatorCS.init, 100);
+
+
+document.onload = function () {console.log("document.onload")}; //nordValidatorCS.init;
+document.addEventListener("load", function () {
+	//if (nordValidatorCS.dbug) 
+		console.log ("document loaded: " + new Date().toString());
+	//if (document.location.href.match(/http/i)) nordValidatorCS.init();
+}, false);
 
 // For some reason, this doesn't seem to work.  Maybe because the script is injected too late.
-/*
+
 document.addEventListener("DOMContentLoaded", function () {
-	if (nordValidatorCS.dbug) console.log ("Content loaded, starting process.");
-	if (document.location.href.match(/http/i)) nordValidatorCS.init();
-});
-*/
+	//if (nordValidatorCS.dbug) 
+		console.log ("DOMContentLoaded: " + new Date().toString());
+	//if (document.location.href.match(/http/i)) nordValidatorCS.init();
+}, false);
+

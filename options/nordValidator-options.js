@@ -4,6 +4,9 @@ if (typeof(nordValidatorOpts) == undefined) {
 
 var nordValidatorOpts = {
 	dbug : false,
+	defaults : {"validatorURL" : "https://validator.w3.org/nu/",
+		"dbug": nordValidator.dbug
+	},
 	downkeys : {"d" : null,
 		"n" : null},
 	usingTmp : false,
@@ -100,10 +103,24 @@ var nordValidatorOpts = {
 	restoreDefaults : function () {
 		/* Do stuff to restore defaults */
 		if (nordValidatorOpts.dbug) console.log ("Restoring defaults.");
+		for (var opt in nordValidator.options) {
+			if (opt == "validatorURL") {
+				nordValidatorOpts.controls["validatorURLTxt"].value = nordValidatorOpts.defaults[opt]
+			} else if (opt == "dbug") {
+				nordValidatorOpts.controls["dbugChk"].checked = nordValidatorOpts.defaults[opt];
+			}
+		}
 	}, // End of restoreDefaults
 	cancel : function () {
 		/* put stuff back */
 		if (nordValidatorOpts.dbug) console.log ("Cancelling and setting stuff back to original values.");
+		for (var opt in nordValidator.options) {
+			if (opt == "validatorURL") {
+				nordValidatorOpts.controls["validatorURLTxt"].value = nordValidator.options[opt]
+			} else if (opt == "dbug") {
+				nordValidatorOpts.controls["dbugChk"].checked = nordValidator.dbug;
+			}
+		}
 	}, // End of cancel
 	checkKeys : function (e) {
 		if (nordValidatorOpts.dbug) console.log ("Key down: " + e.keyCode + ".");
