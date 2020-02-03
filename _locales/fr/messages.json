@@ -4,11 +4,27 @@
         "description": "Name of the extension."
     },
     "extensionDescription": {
-        "message": "C'est Validates HTML and whatnot",
-        "description": "Description of the extension."
+        "message": "C'est Validates HTML et whatnot",
+        "description": "Description a l'extension."
     },
     "defaultTitle": {
         "message": "Le NordValidator",
         "description": "What's shown in the mouse-over."
+    },
+    "validMessage" : {
+	    "message" : "Valide",
+	    "description" : "What's shown when a page is valid"
+    },
+    "errorMessage" : {
+	    "message": "Erreur",
+	    "description" : "Il y avait une erreur."
+    },
+    "waitingMessage" : {
+	    "message": "Attendre",
+	    "description" : "Attendre..."
+    },
+    "warningLetter" : {
+	    "message": "A",
+	    "description" : "What shows after the warning count"
     }
 }
