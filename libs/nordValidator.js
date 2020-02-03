@@ -7,6 +7,7 @@ var nordValidator = {
 	postLoad : [],
 	options : {
 		"validatorURL" : "https://validator.w3.org/nu/",
+		"waitTime" : 1000,
 		"dbug": nordValidator.dbug
 	},
 	init : function () {

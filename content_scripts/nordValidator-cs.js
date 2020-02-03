@@ -9,17 +9,18 @@ var nordValidatorCS = {
 	warningCnt : 0,
 	hash : null,
 	returnFun : null,
+	timeoutID : null,
 	init : function () {
 		// Should I do something here?
-		if (nordValidatorCS.dbug) console.log ("Initting");
-		nordValidatorCS.startProcess();
+		if (nordValidatorCS.dbug) console.log ("Initting with timeoutID of: " + nordValidatorCS.timeoutID + ", and I'll be waiting for " + nordValidator.options["waitTime"] + ".");
+		if (document.location.href.match(/http/i) && !nordValidatorCS.timeoutID) nordValidatorCS.timeoutID = setTimeout(nordValidatorCS.startProcess, nordValidator.options["waitTime"]);
 	}, // End of init
 	startProcess : function () {
 		// gather contents
 		// Two options here:
 		// Do like the bookmarklet and create a textarea and form to submit to the validator, or
 		// Gather the contents into a variable, send to the BG script, and have it send the data.  This one may be the necessary one.
-		
+		if (nordValidatorCS.dbug) console.log ("Starting process.  timeoutID is now: " + nordValidatorCS.timeoutID + ".");
 		nordValidatorCS.stat = "waiting";
 
 		var body, validForm, showSource, out, contentTA = null;
@@ -33,7 +34,7 @@ var nordValidatorCS = {
 	sendForm : function (contents) {
 		
 		// Just send form data randomly.  For some reason the json part isn't working.
-		if (nordValidatorCS.dbug) console.log ("Creating a faux-form and submitting it.");
+		if (nordValidatorCS.dbug) console.log ("Creating a faux-form and submitting it. (" + document.location.href + ")");
 		var http = new XMLHttpRequest();
 		http.open("POST", nordValidator.options.validatorURL, true);
 		var fd = new FormData();
@@ -292,6 +293,7 @@ browser.runtime.onMessage.addListener(nordValidatorCS.notify);
 nordValidator.addToPostLoad([function () {
 	if (nordValidatorCS.dbug === false && nordValidator.dbug === true) console.log ("turning nordValidatorCS.dbug on.");
 	nordValidatorCS.dbug = nordValidator.dbug;
+	nordValidatorCS.init();
 }]);
 
        	//console.log ("nordValidatorCS.js loaded in " +document.location.href + ": " + new Date().toString());
@@ -318,7 +320,7 @@ document.addEventListener("load", function () {
 window.addEventListener("load", function () {
 	if (nordValidatorCS.dbug) 
 		console.log ("window loaded: " + Math.floor(Date.now() - start/1000));
-	if (document.location.href.match(/http/i)) setTimeout (nordValidatorCS.init, 5000);
+	nordValidatorCS.init();
 }, false);
 
 // For some reason, this doesn't seem to work.  Maybe because the script is injected too late.

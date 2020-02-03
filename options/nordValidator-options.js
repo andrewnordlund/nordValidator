@@ -5,6 +5,7 @@ if (typeof(nordValidatorOpts) == undefined) {
 var nordValidatorOpts = {
 	dbug : false,
 	defaults : {"validatorURL" : "https://validator.w3.org/nu/",
+		"waitTime" : 5000,
 		"dbug": nordValidator.dbug
 	},
 	downkeys : {"d" : null,
@@ -12,6 +13,7 @@ var nordValidatorOpts = {
 	usingTmp : false,
 	controls : {
 		"validatorURLTxt" : null,
+		"waitTimeTxt" : null,
 		"devSection" : null,
 		"dbugChk" : null,
 		"saveBtn" : null,
@@ -57,18 +59,6 @@ var nordValidatorOpts = {
 			if (nordValidatorOpts.dbug) console.log ("Not creating Undo button.");
 		}
 	}, // End of createUndoBtn
-	disableDownloadButtons : function () {
-		var downloadOverwriteBtn, downloadSyncBtn = null;
-		try {
-			downloadOverwriteBtn = document.getElementById("downloadOverwriteBtn");
-			downloadOverwriteBtn.setAttribute("disabled", true);
-			downloadSyncBtn = document.getElementById("downloadSyncBtn");
-			downloadSyncBtn.setAttribute("disabled", true);
-		}
-		catch (ex) {
-			console.warn(ex.message);
-		}
-	}, // End of disableDownloadButtons
 	save : function () {
 		// Gather stuff somehow, then save it.
 		nordValidatorOpts.saveOptions();
@@ -85,15 +75,18 @@ var nordValidatorOpts = {
 	saveOptions : function () {
 		// Gather options from the form
 		nordValidator.options["validatorURL"] = nordValidatorOpts.controls["validatorURLTxt"].value;
+		nordValidator.options["waitTime"] = nordValidatorOpts.controls["waitTimeTxt"].value;
 		nordValidator.options["dbug"] = nordValidatorOpts.controls["dbugChk"].checked;
 
 		browser.storage.local.set({"nordValidatorOptions": nordValidator.options}).then(function () { if (nordValidator.options["dbug"]) console.log ("Saved!");}, nordValidator.errorFun);
 		browser.runtime.sendMessage({"msg":"Updating options", "task" : "updateOptions", "options" : nordValidator.options});
 	}, // End of saveOptions
 	fillValues : function () {
-		if (nordValidatorOpts.dbug) console.log ("Filling form values.");
+		//if (nordValidatorOpts.dbug) //
+			console.log ("Filling form values: " + nordValidator.options.waitTime.toString() + "ms");
 		// Fill the forms and stuff
 		nordValidatorOpts.controls["validatorURLTxt"].setAttribute("value", nordValidator.options.validatorURL);
+		nordValidatorOpts.controls["waitTimeTxt"].setAttribute("value", nordValidator.options.waitTime);
 		nordValidatorOpts.dbug = nordValidator.options.dbug;
 		if (nordValidator.options.dbug === true) {
 			nordValidatorOpts.controls["dbugChk"].setAttribute("checked", "checked");
@@ -104,10 +97,10 @@ var nordValidatorOpts = {
 		/* Do stuff to restore defaults */
 		if (nordValidatorOpts.dbug) console.log ("Restoring defaults.");
 		for (var opt in nordValidator.options) {
-			if (opt == "validatorURL") {
-				nordValidatorOpts.controls["validatorURLTxt"].value = nordValidatorOpts.defaults[opt]
-			} else if (opt == "dbug") {
+			if (opt == "dbug") {
 				nordValidatorOpts.controls["dbugChk"].checked = nordValidatorOpts.defaults[opt];
+			} else {
+				nordValidatorOpts.controls[opt + "Txt"].value = nordValidatorOpts.defaults[opt];
 			}
 		}
 	}, // End of restoreDefaults
@@ -115,10 +108,10 @@ var nordValidatorOpts = {
 		/* put stuff back */
 		if (nordValidatorOpts.dbug) console.log ("Cancelling and setting stuff back to original values.");
 		for (var opt in nordValidator.options) {
-			if (opt == "validatorURL") {
-				nordValidatorOpts.controls["validatorURLTxt"].value = nordValidator.options[opt]
-			} else if (opt == "dbug") {
+			if (opt == "dbug") {
 				nordValidatorOpts.controls["dbugChk"].checked = nordValidator.dbug;
+			} else {
+				nordValidatorOpts.controls[opt + "Txt"].value = nordValidatorOpts.options[opt];
 			}
 		}
 	}, // End of cancel
