@@ -1,4 +1,3 @@
-console.log ("STaring with nordValidatorCS.");
 if (typeof (nordValidatorCS) == "undefined") {
 	var nordValidatorCS = {};
 }
@@ -295,7 +294,7 @@ nordValidator.addToPostLoad([function () {
 	nordValidatorCS.dbug = nordValidator.dbug;
 }]);
 
-       	console.log ("nordValidatorCS.js loaded in " +document.location.href + ": " + new Date().toString());
+       	//console.log ("nordValidatorCS.js loaded in " +document.location.href + ": " + new Date().toString());
 //if (document.location.href.match(/^http/i)) 
 /*
 document.addEventListener("readystatechange", function () {

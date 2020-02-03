@@ -2,7 +2,7 @@ if (typeof (nordValidator) == "undefined") {
 	var nordValidator = {};
 }
 var nordValidator = {
-	dbug : true,
+	dbug : false,
 	loaded : false,
 	postLoad : [],
 	options : {
