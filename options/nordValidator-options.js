@@ -6,6 +6,9 @@ var nordValidatorOpts = {
 	dbug : false,
 	defaults : {"validatorURL" : "https://validator.w3.org/nu/",
 		"waitTime" : 5000,
+		"htmlText" : false,
+		"htmlCommennts" : false,
+		"cdata" :  false,
 		"dbug": nordValidator.dbug
 	},
 	downkeys : {"d" : null,
@@ -76,6 +79,9 @@ var nordValidatorOpts = {
 		// Gather options from the form
 		nordValidator.options["validatorURL"] = nordValidatorOpts.controls["validatorURLTxt"].value;
 		nordValidator.options["waitTime"] = nordValidatorOpts.controls["waitTimeTxt"].value;
+		nordValidator.options["htmlText"] = nordValidatorOpts.controls["htmlTextChk"].checked;
+		nordValidator.options["htmlComments"] = nordValidatorOpts.controls["htmlCommentsChk"].checked;
+		nordValidator.options["cdata"] = nordValidatorOpts.controls["cdataChk"].checked;
 		nordValidator.options["dbug"] = nordValidatorOpts.controls["dbugChk"].checked;
 
 		browser.storage.local.set({"nordValidatorOptions": nordValidator.options}).then(function () { if (nordValidator.options["dbug"]) console.log ("Saved!");}, nordValidator.errorFun);
@@ -87,6 +93,9 @@ var nordValidatorOpts = {
 		// Fill the forms and stuff
 		nordValidatorOpts.controls["validatorURLTxt"].setAttribute("value", nordValidator.options.validatorURL);
 		nordValidatorOpts.controls["waitTimeTxt"].setAttribute("value", nordValidator.options.waitTime);
+		if (nordValidator.options["htmlText"]) nordValidatorOpts.controls["htmlTextChk"].setAttribute("checked", "checked");
+		if (nordValidator.options["htmlComments"]) nordValidatorOpts.controls["htmlCommentsChk"].setAttribute("checked", "checked");
+		if (nordValidator.options["cdata"]) nordValidatorOpts.controls["cdataChk"].setAttribute("checked", "checked");
 		nordValidatorOpts.dbug = nordValidator.options.dbug;
 		if (nordValidator.options.dbug === true) {
 			nordValidatorOpts.controls["dbugChk"].setAttribute("checked", "checked");
@@ -100,7 +109,11 @@ var nordValidatorOpts = {
 			if (opt == "dbug") {
 				nordValidatorOpts.controls["dbugChk"].checked = nordValidatorOpts.defaults[opt];
 			} else {
-				nordValidatorOpts.controls[opt + "Txt"].value = nordValidatorOpts.defaults[opt];
+				if (opt.match(/(validatorURL|waitTime)/i)) {
+					nordValidatorOpts.controls[opt + "Txt"].value = nordValidatorOpts.defaults[opt];
+				} else if (opt.match(/(html(Text|Comments)|cdata)/i)) {
+					nordValidatorOpts.controls[opt + "Chk"].checked = nordValidatorOpts.defaults[opt];
+				}
 			}
 		}
 	}, // End of restoreDefaults
@@ -108,8 +121,8 @@ var nordValidatorOpts = {
 		/* put stuff back */
 		if (nordValidatorOpts.dbug) console.log ("Cancelling and setting stuff back to original values.");
 		for (var opt in nordValidator.options) {
-			if (opt == "dbug") {
-				nordValidatorOpts.controls["dbugChk"].checked = nordValidator.dbug;
+			if (opt.match(/(dbug|cdata|html(Comments|Text))/i)) {
+				nordValidatorOpts.controls[opt + "Chk"].checked = nordValidator.dbug;
 			} else {
 				nordValidatorOpts.controls[opt + "Txt"].value = nordValidatorOpts.options[opt];
 			}

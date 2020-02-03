@@ -8,6 +8,9 @@ var nordValidator = {
 	options : {
 		"validatorURL" : "https://validator.w3.org/nu/",
 		"waitTime" : 1000,
+		"htmlText" : false,
+		"htmlCommennts" : false,
+		"cdata" :  false,
 		"dbug": nordValidator.dbug
 	},
 	init : function () {
@@ -52,50 +55,6 @@ var nordValidator = {
 		
 		if (callback && typeof callback != "undefined") callback();
 	}, // End of getSavedFromJSON
-	downloadAndOverwrite : function () {
-		var callback = null;
-		if (arguments.length > 0) callback = arguments[0];
-		var syncformURL = nordburg.cloudSyncURL;
-		syncformURL = syncformURL.replace(/\.php?.*$/, ".php?cloud_files_ID=" + nordValidator.options.cfid + "&task=download&hijax=true");
-		if (nordValidator.dbug) console.log ("Downloading from " + syncformURL + ".");
-		nordburg.getRemoteFile(syncformURL, function (responseText) {
-			var cloudFile = responseText.replace("/\n/g", "");
-			if (typeof(cloudFile) == "string") cloudFile = JSON.parse(cloudFile);
-			if (typeof(cloudFile) == "string") cloudFile = JSON.parse(cloudFile);
-			if (nordValidator["options"].dbug) {
-				console.log("Got cloudFile...");
-				console.log(cloudFile);
-				console.log("Of type " + typeof(cloudFile) + ".");
-			}
-			nordValidator.getSavedFromJSON(cloudFile, function () {
-				if (nordValidator.dbug) console.log ("Saving in nordValidator-temp.");
-				var saving = browser.storage.local.set({"nordValidator-temp": nordValidator.cmx});
-				if (callback) saving.then(callback, nordValidator.errorFun);
-			});
-		}, true);
-	}, // End of downloadAndOverwrite
-	downloadAndSync : function () {
-		var callback = null;
-		if (arguments.length > 0) callback = arguments[0];
-		var syncformURL = nordburg.cloudSyncURL;
-		syncformURL = syncformURL.replace(/\.php?.*$/, ".php?cloud_files_ID=" + nordValidator.options.cfid + "&task=download&hijax=true");
-		nordburg.getRemoteFile(syncformURL, function (responseText) {
-			var cloudFile = responseText.replace("/\n/g", "");
-			if (cloudFile.match(/\<\?xml .*version="1\.0".*\?\>/)) {
-				cloudFile = nordValidatorOpts.XMLtoJSON(cloudFile);
-			} else {
-				if (typeof(cloudFile) == "string") cloudFile = JSON.parse(cloudFile);
-				if (nordValidator.dbug) {
-					console.log("Got cloudFile...");
-					console.log(cloudFile);
-					console.log("Of type " + typeof(cloudFile) + ".");
-				}
-				if (typeof(cloudFile) == "string") cloudFile = JSON.parse(cloudFile);
-				// Oh man....how do we sync?
-				// Welp, figure it out here.
-			}
-		}, true);
-	}, // End of downloadAndSync
 	loadOptions : function (success, failure) {
 		if (nordValidator.dbug) console.log ("Loading Options.");
 		var theThen = function (savedObj) {
@@ -116,8 +75,6 @@ var nordValidator = {
 						if (opt == "dbug") {
 							if (nordValidator.dbug === false && nordValidator.options[opt] === true) console.log ("loadOptions::Turning nordValidator.dbug on.");
 							nordValidator.dbug = nordValidator.options[opt];
-						} else if (opt == "syncFormURL") {
-							nordburg.syncFormURL = nordValidator.options[opt];
 						}
 					}
 				}

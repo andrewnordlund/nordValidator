@@ -22,6 +22,23 @@
 					<input id="waitTimeTxt" name="waitTimeTxt" aria-describedby="waitTimeDesc" type="number">
 					<p id="waitTimeDesc">To compensate for Javascript-heavy pages, the add-on will wait before sending the page for validation.  Put that time here.  Default: 5000 ms (5 seconds)</p>
 				</div>
+				<div>
+					<fieldset>
+						<legend>Include these parts in the validation (None of these are recommended)</legend>
+						<div>
+							<input type="checkbox" id="htmlTextChk" name="htmlTextChk">
+							<label for="htmlTextChk">Text, ie: the content</label>
+						</div>
+						<div>
+							<input type="checkbox" id="htmlCommentsChk" name="htmlCommentsChk">
+							<label for="htmlCommentsChk">HTML Comments (&lt;!-- These comments --&gt;)</label>
+						</div>
+						<div>
+							<input type="checkbox" id="cdataChk" name="cdataChk">
+							<label for="cdataChk">CDATA sections (mostly for XHTML)</label>
+						</div>
+					</fieldset>
+				</div>
 			</section>
 			<section id="devSection">
 				<h2>Developer Options</h2>
