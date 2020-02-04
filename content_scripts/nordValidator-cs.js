@@ -29,7 +29,7 @@ var nordValidatorCS = {
 		
 		//body = document.getElementsByTagName("body")[0];
 
-		//nordValidatorCS.sendForm(contents);
+		nordValidatorCS.sendForm(contents);
 	}, // End of startProcess
 	sendForm : function (contents) {
 		
@@ -210,9 +210,49 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		doctype += document.doctype.name + ">\n";// + document.documentElement.outerHTML;
 		//return contents;
 		
-		var contents=[];
-		var tags = [];
-		console.log ("firstSibling: "  + document.firstChild.nodeType +", and childNodes[0]: " + document.childNodes[0].nodeType + " with length: " + document.childNodes.length + ".");
+		var contents = document.documentElement.outerHTML;
+
+		// At this point, if you traverse the html tag, malformed tags may be returned as proper tags, thus passing validation, when it shouldn't.  Something to try!
+		// Instead, we'll use regex to grab tags, comments, etc.
+		//console.log ("Contents starting as: " + contents + ".");
+		if (!nordValidator.options["scriptSrc"]) contents = contents.replace(/(<script[^>]+?src)\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*)/ig, "$1=\"dummyvalue.js\"");
+		if (nordValidator.options["htmlComments"] && nordValidator.options["htmlText"] && nordValidator.options["cdata"]) {
+			// Just friggin' validate the whole thing with nothing removed
+			//contents = doctype + contents;
+		} else {
+			// Okay.  Something has to be removed.  Maybe all but the tags? That would be recommended
+			if (!nordValidator.options["htmlComments"] && !nordValidator.options["htmlText"] && !nordValidator.options["cdata"]) {
+				// Only do tags.
+				var tags = contents.match(/<[^!]\/?[^>]*?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>/g);
+				tags = tags.slice(1);
+				contents = tags.join("\n");
+			} else {
+				// Okay, so somethings are being removed, but not all.  Now comes the tough part.
+				if (!nordValidator.options["htmlComments"]) {
+					if (nordValidatorCS.dbug) console.log ("Removing comments:");
+					contents = contents.replace(/<!--(.|\n)*?-->/g, "");
+					//console.log ("Contents now: " + contents + ".");
+				}
+				if (!nordValidator.options["cdata"]) {
+					if (nordValidatorCS.dbug) console.log ("Removing cdata:");
+					contents = contents.replace(/<!\[CDATA\[.*\]\]>/ig, "");
+					//console.log ("Contents now: " + contents + ".");
+				}
+				if (!nordValidator.options["htmlText"]) {
+					if (nordValidatorCS.dbug) console.log ("Removing text:");
+					var tags = contents.match(/(<\/?[^!>]*?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>|<!--(.|\n)*?-->)/ig);
+					tags.slice(1);
+					contents = tags.join("\n");
+					//console.log ("Contents now: " + contents + ".");
+				}
+			}
+		}
+
+		contents = doctype + contents;
+
+
+		//var tags = [];
+		//console.log ("firstSibling: "  + document.firstChild.nodeType +", and childNodes[0]: " + document.childNodes[0].nodeType + " with length: " + document.childNodes.length + ".");
 		//for (var i = 0; i < document.childNodes.length; i++) {
 		/*
 		 var e=function(a) {
@@ -227,6 +267,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 			}(document),
 		 
 		 */
+		/*
 		var a = document;
 		for (var b="",a=a.firstChild; a; ) {
 			console.log ("a: nodeType: " + a.nodeType + " <" + a.nodeName + ">");
@@ -248,15 +289,16 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 			 * else if (document.childNodes[i].nodeType == 10) {
 				console.log ("Found doctype!");
 				contents.push("<!DOCTYPE "+document.childNodes[i].name+">");
-			}*/
+			}* /
 			a=a.nextSibling;
 		}
+		*/
 		//contents = document.innerHTML;
 		//console.log ("contents: "  + contents +".");
 		//console.log ((body && contents
-		if (nordValidator.dbug) console.log ("Got contents: " + contents + ".");
+		if (nordValidatorCS.dbug) console.log ("Got contents: " + contents + ".");
 
-		return doctype + contents.join("\n");
+		return contents;
 		
 
 	}, // End of gatherContent

@@ -9,6 +9,7 @@ var nordValidatorOpts = {
 		"htmlText" : false,
 		"htmlCommennts" : false,
 		"cdata" :  false,
+		"scriptSrc" : false,
 		"dbug": nordValidator.dbug
 	},
 	downkeys : {"d" : null,
@@ -17,6 +18,10 @@ var nordValidatorOpts = {
 	controls : {
 		"validatorURLTxt" : null,
 		"waitTimeTxt" : null,
+		"htmlTextChk" : null,
+		"htmlCommentsChk" : null,
+		"cdataChk" : null,
+		"scriptSrcChk" : null,
 		"devSection" : null,
 		"dbugChk" : null,
 		"saveBtn" : null,
@@ -81,7 +86,9 @@ var nordValidatorOpts = {
 		nordValidator.options["waitTime"] = nordValidatorOpts.controls["waitTimeTxt"].value;
 		nordValidator.options["htmlText"] = nordValidatorOpts.controls["htmlTextChk"].checked;
 		nordValidator.options["htmlComments"] = nordValidatorOpts.controls["htmlCommentsChk"].checked;
+		if (nordValidatorOpts.dbug) console.log ("saveOptions::Saving Comments.  Since htmlCommentsChk is " + nordValidatorOpts.controls["htmlCommentsChk"].checked + " then htmlComments is now " + nordValidator.options["htmlComments"] + ".");
 		nordValidator.options["cdata"] = nordValidatorOpts.controls["cdataChk"].checked;
+		nordValidator.options["scriptSrc"] = nordValidatorOpts.controls["scriptSrcChk"].checked;
 		nordValidator.options["dbug"] = nordValidatorOpts.controls["dbugChk"].checked;
 
 		browser.storage.local.set({"nordValidatorOptions": nordValidator.options}).then(function () { if (nordValidator.options["dbug"]) console.log ("Saved!");}, nordValidator.errorFun);
@@ -95,7 +102,9 @@ var nordValidatorOpts = {
 		nordValidatorOpts.controls["waitTimeTxt"].setAttribute("value", nordValidator.options.waitTime);
 		if (nordValidator.options["htmlText"]) nordValidatorOpts.controls["htmlTextChk"].setAttribute("checked", "checked");
 		if (nordValidator.options["htmlComments"]) nordValidatorOpts.controls["htmlCommentsChk"].setAttribute("checked", "checked");
+		console.log ("fillValues::Since htmlComments is " + nordValidator.options["htmlComments"] + ", then the htmlCommentsChk value is " + nordValidatorOpts.controls["htmlCommentsChk"].getAttribute("checked") + ".");
 		if (nordValidator.options["cdata"]) nordValidatorOpts.controls["cdataChk"].setAttribute("checked", "checked");
+		if (nordValidator.options["scriptSrc"]) nordValidatorOpts.controls["scriptSrcChk"].setAttribute("checked", "checked");
 		nordValidatorOpts.dbug = nordValidator.options.dbug;
 		if (nordValidator.options.dbug === true) {
 			nordValidatorOpts.controls["dbugChk"].setAttribute("checked", "checked");
@@ -111,7 +120,7 @@ var nordValidatorOpts = {
 			} else {
 				if (opt.match(/(validatorURL|waitTime)/i)) {
 					nordValidatorOpts.controls[opt + "Txt"].value = nordValidatorOpts.defaults[opt];
-				} else if (opt.match(/(html(Text|Comments)|cdata)/i)) {
+				} else if (opt.match(/(html(Text|Comments)|cdata|scriptSrc)/i)) {
 					nordValidatorOpts.controls[opt + "Chk"].checked = nordValidatorOpts.defaults[opt];
 				}
 			}
@@ -121,7 +130,7 @@ var nordValidatorOpts = {
 		/* put stuff back */
 		if (nordValidatorOpts.dbug) console.log ("Cancelling and setting stuff back to original values.");
 		for (var opt in nordValidator.options) {
-			if (opt.match(/(dbug|cdata|html(Comments|Text))/i)) {
+			if (opt.match(/(dbug|cdata|scriptSrc|html(Comments|Text))/i)) {
 				nordValidatorOpts.controls[opt + "Chk"].checked = nordValidator.dbug;
 			} else {
 				nordValidatorOpts.controls[opt + "Txt"].value = nordValidatorOpts.options[opt];

@@ -9,7 +9,8 @@ var nordValidator = {
 		"validatorURL" : "https://validator.w3.org/nu/",
 		"waitTime" : 1000,
 		"htmlText" : false,
-		"htmlCommennts" : false,
+		"htmlComments" : false,
+		"scriptSrc" : false,
 		"cdata" :  false,
 		"dbug": nordValidator.dbug
 	},
