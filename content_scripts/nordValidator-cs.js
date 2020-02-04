@@ -222,7 +222,8 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		} else {
 			// Okay.  Something has to be removed.  Maybe all but the tags? That would be recommended
 			if (!nordValidator.options["htmlComments"] && !nordValidator.options["htmlText"] && !nordValidator.options["cdata"]) {
-				// Only do tags.
+				// Only do tags....but we gotta leave some data in some tags, like <title> and <options>
+				contents = contents.replace (/<([^!>])+?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>
 				var tags = contents.match(/<[^!]\/?[^>]*?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>/g);
 				tags = tags.slice(1);
 				contents = tags.join("\n");
@@ -231,19 +232,19 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 				if (!nordValidator.options["htmlComments"]) {
 					if (nordValidatorCS.dbug) console.log ("Removing comments:");
 					contents = contents.replace(/<!--(.|\n)*?-->/g, "");
-					//console.log ("Contents now: " + contents + ".");
+					console.log ("Contents now: " + contents + ".");
 				}
 				if (!nordValidator.options["cdata"]) {
 					if (nordValidatorCS.dbug) console.log ("Removing cdata:");
 					contents = contents.replace(/<!\[CDATA\[.*\]\]>/ig, "");
-					//console.log ("Contents now: " + contents + ".");
+					console.log ("Contents now: " + contents + ".");
 				}
 				if (!nordValidator.options["htmlText"]) {
 					if (nordValidatorCS.dbug) console.log ("Removing text:");
 					var tags = contents.match(/(<\/?[^!>]*?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>|<!--(.|\n)*?-->)/ig);
 					tags.slice(1);
 					contents = tags.join("\n");
-					//console.log ("Contents now: " + contents + ".");
+					console.log ("Contents now: " + contents + ".");
 				}
 			}
 		}
