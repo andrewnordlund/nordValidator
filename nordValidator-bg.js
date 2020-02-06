@@ -104,7 +104,7 @@ var nordValidatorBG = {
 }
 
 var activeListenerFun = function (activeInfo) {
-	if (nordValidatorBG.dbug) console.log ("nordValidator-bg::tab " + nordburg.getKeys(activeInfo).join(", ") + "."); //"(" + changeInfo.url + "/" + changeInfo.title + "(" + changeInfo.status + ")) has been updated to " + tabInfo.url +"/"+tabInfo.title +"(" + tabInfo.status + ").");
+	if (nordValidatorBG.dbug) console.log ("nordValidator-bg::tab " + nordburg.getKeys(activeInfo).join(", ") + " Activated."); //"(" + changeInfo.url + "/" + changeInfo.title + "(" + changeInfo.status + ")) has been updated to " + tabInfo.url +"/"+tabInfo.title +"(" + tabInfo.status + ").");
 	browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
 		if (tabs[0]) {
 			nordValidatorBG.changeIcon("waiting", 0, 0);
@@ -125,7 +125,8 @@ var activeListenerFun = function (activeInfo) {
 }
 
 var updateListenerFun = function (tabId, changeInfo, tabInfo) {
-	//if (nordValidatorBG.dbug) console.log ("nordValidator-bg::tab " + tabId + "(" + changeInfo.url + "/" + changeInfo.title + "(" + changeInfo.status + ")) has been updated to " + tabInfo.url +"/"+tabInfo.title +"(" + tabInfo.status + ").");
+	if (nordValidatorBG.dbug) console.log ("nordValidator-bg::tab " + tabId + "(" + changeInfo.url + "/" + changeInfo.title + "(" + changeInfo.status + ")) has been Updated to " + tabInfo.url +"/"+tabInfo.title +"(" + tabInfo.status + ").");
+	nordValidatorBG.changeIcon("waiting", 0, 0);
 	if (tabInfo.url.match(/^https?:\/\//i)) {
 		if (tabInfo.status == "complete" && changeInfo.status == "complete") {
 			if (nordValidatorBG.dbug) console.log ("nordValidator-bg::Finally complete.  Hopefully thing should be done by now.  Sending to tabId: " + tabId);
@@ -135,7 +136,7 @@ var updateListenerFun = function (tabId, changeInfo, tabInfo) {
 			//	nordValidatorBG.changeIcon(msg["status"]);
 			//}, nordValidator.errorFun);*/
 		} else {
-			nordValidatorBG.changeIcon("waiting", 0, 0);
+			//nordValidatorBG.changeIcon("waiting", 0, 0);
 		}
 	} else {
 		nordValidatorBG.changeIcon("inactive", 0, 0);

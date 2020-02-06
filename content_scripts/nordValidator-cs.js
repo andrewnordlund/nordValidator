@@ -30,7 +30,7 @@ var nordValidatorCS = {
 		
 		//body = document.getElementsByTagName("body")[0];
 
-		nordValidatorCS.sendForm(contents);
+		//nordValidatorCS.sendForm(contents);
 	}, // End of startProcess
 	sendForm : function (contents) {
 		
@@ -45,10 +45,11 @@ var nordValidatorCS = {
 		//fd.append("showoutline","yes");
 		
 		http.send(fd);
-		http.onload = function () {
-			nordValidatorCS.dealWithResults(http.responseText);
-		}
-		http.addEventListener("load", nordValidatorCS.dealWithResults, false);
+		//http.onload = function () {
+		//	console.log ("used http.onload.");
+		//	nordValidatorCS.dealWithResults(http.responseText);
+		//}
+		http.addEventListener("load", function () {console.log ("used http.addEventListener.");nordValidatorCS.dealWithResults(http.responseText);}, false);
 		//clearTimeout(nordValidatorCS.timeoutID);
 		//nordValidatorCS.timeoutID = null;
 	}, // End of sendForm
@@ -171,6 +172,7 @@ var nordValidatorCS = {
 		for (var i = 0; i < results.messages.length; i++) {
 			if (results.messages[i]["type"] == "error") {
 				if (results.messages[i]["message"].match(badErrorsRS)) {
+					console.log ("Adding " + results.messages[i]["message"] + "to realErrors.");
 					realErrors.push(results.messages[i]);
 				}
 			} else if (results.messages[i]["type"] == "info" && results.messages[i]["subType"] == "warning") {
@@ -220,6 +222,9 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		if (!nordValidator.options["scriptSrc"]) contents = contents.replace(/(<script[^>]+?src)\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*)/ig, "$1=\"dummyvalue.js\"");
 
 		// Gonna break the page up into tags, comments, cdata, and text, then remove all that needs removing.
+		// Nope.  This way slows things right the cripes down.
+
+		/*
 		contents = contents.replace(/[\n\f\t\s ]+/g, " ");
 		contents = contents.split(/(<!--(?:.|\n)*?-->|<!\[CDATA\[.*?\]\]>|<\/?[^>]+?(?:\s*\w+(?:\s*=\s*(?:"[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>)/);
 
@@ -239,33 +244,118 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 			//console.log (i + ": " + contents[i] + ".");
 		}
 		contents = contents.join("\n");
+		*/
+		contents = contents.replace(/[\n\f\t\s ]+/g, " ");
 
-		/*
 		if (nordValidator.options["htmlComments"] && nordValidator.options["htmlText"] && nordValidator.options["cdata"]) {
+			if (nordValidatorCS.dbug) console.log("Include everything.  Sending the whole document.");
 			// Just friggin' validate the whole thing with nothing removed
-			//contents = doctype + contents;
+			
 		} else {
 			// Okay.  Something has to be removed.  Maybe all but the tags? That would be recommended
-			if (!nordValidator.options["htmlComments"] && !nordValidator.options["htmlText"] && !nordValidator.options["cdata"]) {
+			//if (!nordValidator.options["htmlComments"] && !nordValidator.options["htmlText"] && !nordValidator.options["cdata"]) {
+			//	if (nordValidatorCS.dbug) console.log("Include only the tags.");
 				// Only do tags....but we gotta leave some data in some tags, like <title> and <options>
-				contents = contents.replace(/[\n\f\t\s ]+/g, " ");
-				contents = contents.split (/(<(?:[^!>]+\s*\w+(?:\s*=\s*(?:"[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>)/);
-				//var tags = contents.match(/<[^!]\/?[^>]*?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>/g);
-				//tags = tags.slice(1);
-				//contents = tags.join("\n");
-				console.log ("Contents now: " + contents.length + ".");
-				for (var i = 0; i < contents.length; i++) {
-					if (!contents[i].match(/^<(?:[^!>]+\s*\w+(?:\s*=\s*(?:"[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>$/)) {
-						if (!contents[i].match(/^ $/)) {
-							console.log ("Changing " + contents[i] + " to abc.");
-							contents[i] = "abc";
+				//try this:
+				/*
+				contents = nordValidatorCS.removeComments(contents);
+				contents = nordValidatorCS.removeCDATA(contents);
+				contents = contents.replace(/>.*?</g, ">\n<");
+				*/
+				/*
+				var tags = contents.match(/<\/?[^!>]+?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>/g);
+				tags = tags.slice(1);
+				contents = tags.join("\n");
+				*/
+			var workerFun = `self.onmessage = function(e) {
+					console.log ("workerFun::Got message " + e.data + ".");
+					var contents = e.data["contents"];
+					contents = contents.split (/(<!--(?:.|\\n)*?-->|<!\\[CDATA\\[(?:.|\\n)*\\]\\]>|<(?:\\/?[^!>]+\\s*(?:\\w+(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|\`[^\`]*\`|\\w*))?)*)>)/i);
+					console.log ("Got " + contents.length + " sections.");
+					for (var i = 0; i < contents.length; i++) {
+						//console.log ("Before: " + i + ": " + contents[i] + ".");
+						if (contents[i].match(/<!--(.|\\n)*?-->/)) {
+							if (!e.data["htmlComments"]) {
+								//contents[i] = "";
+								contents.splice(i, 1);
+								i--;
+								//console.log ("And contents now have " + contents.length + " elements.");
+							}
+						} else if (contents[i].match(/<!\\[CDATA\\[.*\\]\\]>/i)) {
+							if (!e.data["cdata"]) {
+								//contents[i] = "";
+								contents.splice(i, 1);
+								i--;
+								//console.log ("And contents now have " + contents.length + " elements.");
+							}
+						} else if (contents[i].match(/<(?:\\/?[^!>]+\\s*(?:\\w+(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|\`[^\`]*\`|\\w*))?)*)>/)) {
+							// It's a tag.  Do nothing
+						} else {
+							// Okay, it's not a comment, cdata, or tag.  Must be text
+							if (!e.data["htmlText"]) {
+								if (contents[i].match(/\\S/)) {
+									// There's some text there.  Replace with abc
+									contents[i] = "abc";
+								} else {
+									//console.log (i + ": It's a blank line.  Get rid of it.");
+									contents.splice(i, 1);
+									i--;
+									//console.log ("And contents now have " + contents.length + " elements.");
+								}
+							}
 						}
+						/*
+						if (!contents[i].match(/^<(?:[^!>]+\\s*\\w+(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|\`[^\`]*\`|\\w*))?)*>$/)) {
+							if (!contents[i].match(/^ $/)) {
+								console.log ("Changing " + contents[i] + " to abc.");
+								contents[i] = "abc";
+							}
+						}
+						*/
+						//console.log ("After: " +i + ": " + contents[i] + ".");
 					}
+					contents = contents.join("\\n");
+					//self.postMessage('Done my thang with new contents: ' + contents);
+					console.log ("Sending contents back as " + contents + ".");
+					postMessage(e.data["doctype"] + contents);
+				};
+				console.log ("workerFun::Running workerFun.");`
+
+			var blob = new Blob([workerFun]);
+				//contents = contents.split (/(<(?:[^!>]+\s*\w+(?:\s*=\s*(?:"[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>)/);
+				//console.log ("Contents now: " + contents.length + ".");
+				//for (var i = 0; i < contents.length; i++) {
+				//	if (!contents[i].match(/^<(?:[^!>]+\s*\w+(?:\s*=\s*(?:"[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>$/)) {
+				//		if (!contents[i].match(/^ $/)) {
+				//			console.log ("Changing " + contents[i] + " to abc.");
+				//			contents[i] = "abc";
+				//		}
+				//	}
 					//console.log (i + ": " + contents[i] + ".");
-				}
-				contents = contents.join("\n");
+				//}
+				//contents = contents.join("\n");
+				//"onmessage = function(e) { postMessage('msg from worker'); }"
+			//]);
+
+			// Obtain a blob URL reference to our worker 'file'.
+			var blobURL = window.URL.createObjectURL(blob);
+
+			var worker = new Worker(blobURL);
+			worker.onmessage = function(e) {
+				console.log ("worker.onMessage::Got worker message " + e.data + ".");
+				nordValidatorCS.sendForm(e.data);
+				//contents = e.data;
+	
+				// e.data == 'msg from worker'
+			};
+
+			worker.postMessage({"doctype" : doctype, "contents" : contents, "htmlComments" : nordValidator.options["htmlComments"], "cdata" : nordValidator.options["cdata"], "htmlText" : nordValidator.options["htmlText"]}); // Start the worker.
+
+				
+				/*
 			} else {
 				// Okay, so somethings are being removed, but not all.  Now comes the tough part.
+				if (nordValidatorCS.dbug) console.log("Include some things.  Strip out the unwanted parts one by one.");
 				if (!nordValidator.options["htmlComments"]) {
 					contents = nordValidatorCS.removeComments(contents);
 				}
@@ -276,9 +366,9 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 					contents = nordValidatorCS.removeText(contents);
 				}
 			}
+			*/
 		}
-		*/
-		contents = doctype + contents;
+		//contents = doctype + contents;
 
 
 		//var tags = [];
@@ -326,9 +416,9 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		//contents = document.innerHTML;
 		//console.log ("contents: "  + contents +".");
 		//console.log ((body && contents
-		if (nordValidatorCS.dbug) console.log ("Got contents: " + contents + ".");
+		//if (nordValidatorCS.dbug) console.log ("Got contents: " + contents + ".");
 
-		return contents;
+		//return contents;
 		
 
 	}, // End of gatherContent
@@ -342,7 +432,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		if (nordValidatorCS.dbug) console.log ("Removing cdata:");
 		contents = contents.replace(/<!\[CDATA\[.*\]\]>/ig, "");
 		console.log ("Contents now: " + contents + ".");
-		return content;
+		return contents;
 	}, // End of removeCDATA
 	removeText : function (contents) {
 		if (nordValidatorCS.dbug) console.log ("Removing text:");
@@ -350,6 +440,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		tags.slice(1);
 		contents = tags.join("\n");
 		console.log ("Contents now: " + contents + ".");
+		return contents;
 	}, // End of removeText
 	startup : function () {
 	}, // End of startup
