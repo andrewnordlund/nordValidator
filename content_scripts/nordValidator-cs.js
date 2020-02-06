@@ -12,8 +12,9 @@ var nordValidatorCS = {
 	timeoutID : null,
 	init : function () {
 		// Should I do something here?
-		if (nordValidatorCS.dbug) console.log ("Initting with timeoutID of: " + nordValidatorCS.timeoutID + ", and I'll be waiting for " + nordValidator.options["waitTime"] + ".");
-		if (document.location.href.match(/http/i) && !nordValidatorCS.timeoutID) nordValidatorCS.timeoutID = setTimeout(nordValidatorCS.startProcess, nordValidator.options["waitTime"]);
+		//if (nordValidatorCS.dbug) console.log ("Initting with timeoutID of: " + nordValidatorCS.timeoutID + ", and I'll be waiting for " + nordValidator.options["waitTime"] + ".");
+		//if (document.location.href.match(/http/i) && !nordValidatorCS.timeoutID) nordValidatorCS.timeoutID = setTimeout(nordValidatorCS.startProcess, nordValidator.options["waitTime"]);
+		nordValidatorCS.startProcess();
 	}, // End of init
 	startProcess : function () {
 		// gather contents
@@ -48,8 +49,8 @@ var nordValidatorCS = {
 			nordValidatorCS.dealWithResults(http.responseText);
 		}
 		http.addEventListener("load", nordValidatorCS.dealWithResults, false);
-		clearTimeout(nordValidatorCS.timeoutID);
-		nordValidatorCS.timeoutID = null;
+		//clearTimeout(nordValidatorCS.timeoutID);
+		//nordValidatorCS.timeoutID = null;
 	}, // End of sendForm
 	makeAndSendForm : function (contents) {
 		// Create a form and submit
@@ -357,6 +358,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		
 		   // deal with tasks here
 		if (message["task"] == "getStatus") {
+			if (nordValidatorCS.stat == null) nordValidatorCS.init();
 			if (nordValidatorCS.dbug) console.log ("nordValidator-cs::sending back a stat of " + nordValidatorCS.stat + ".");
 			sendMessage({"task":"updateIcon", "status":nordValidatorCS.stat, "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
 			if (nordValidatorCS.stat == "waiting" || nordValidatorCS.stat === null) {
@@ -409,7 +411,7 @@ browser.runtime.onMessage.addListener(nordValidatorCS.notify);
 nordValidator.addToPostLoad([function () {
 	if (nordValidatorCS.dbug === false && nordValidator.dbug === true) console.log ("turning nordValidatorCS.dbug on.");
 	nordValidatorCS.dbug = nordValidator.dbug;
-	nordValidatorCS.init();
+	//nordValidatorCS.init();
 }]);
 
        	//console.log ("nordValidatorCS.js loaded in " +document.location.href + ": " + new Date().toString());
@@ -433,12 +435,13 @@ document.addEventListener("load", function () {
 */
 
 //window.onload = function () {console.log("window.onload: " + Math.floor(Date.now() - start/1000))}; //nordValidatorCS.init;
+/*
 window.addEventListener("load", function () {
 	if (nordValidatorCS.dbug) 
 		console.log ("window loaded: " + Math.floor(Date.now() - start/1000));
 	nordValidatorCS.init();
 }, false);
-
+*/
 // For some reason, this doesn't seem to work.  Maybe because the script is injected too late.
 /*
 document.addEventListener("DOMContentLoaded", function () {

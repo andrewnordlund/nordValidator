@@ -50,10 +50,10 @@ var nordValidatorBG = {
 	getStatus : function () {
 		browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
 			//if (tabs[0]) {
-				if (tabs[0].url.match(/^https?:\/\//)) {
+				if (tabs[0].url.match(/^http?:\/\//)) {
 					if (nordValidatorBG.dbug) console.log ("nordValidatorBG::sending message to " + tabs[0].title + " to get Status.");
 					browser.tabs.sendMessage(tabs[0].id, {task: "getStatus"}).then(function (msg) {
-						if (nordValidatorBG.dbug) console.log ("Promis fulfilled.");
+						if (nordValidatorBG.dbug) console.log ("Promise fulfilled.");
 						nordValidatorBG.changeIcon(msg["status"], msg["errorCount"], msg["warningCount"]);
 					}, nordValidator.errorFun).catch(function (x) {
 						if (nordValidatorBG.dbug) console.log ("Caught something: " + x.toString());
