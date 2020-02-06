@@ -15,7 +15,7 @@ var nordValidatorBG = {
 			"inactive" : {"icon" : "icons/inactive-19.png", "title" : browser.i18n.getMessage("defaultTitle")}
 		}*/
 
-		if (nordValidatorBG.dbug) console.log ("changeIcon::About to change the icon to " + stat +" " +  errs + "/" + warnings + ".");
+		//if (nordValidatorBG.dbug) console.log ("changeIcon::About to change the icon to " + stat +" " +  errs + "/" + warnings + ".");
 		browser.tabs.query({active: true, currentWindow: true}, function(tabs) {
 		
 			//browser.browserAction.setTitle({title: browser.i18n.getMessage("defaultTitle"), tabId: tabs[0].id});
@@ -50,7 +50,7 @@ var nordValidatorBG = {
 	getStatus : function () {
 		browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
 			//if (tabs[0]) {
-				if (tabs[0].url.match(/^http?:\/\//)) {
+				if (tabs[0].url.match(/^https?:\/\//)) {
 					if (nordValidatorBG.dbug) console.log ("nordValidatorBG::sending message to " + tabs[0].title + " to get Status.");
 					browser.tabs.sendMessage(tabs[0].id, {task: "getStatus"}).then(function (msg) {
 						if (nordValidatorBG.dbug) console.log ("Promise fulfilled.");
