@@ -72,6 +72,7 @@ var nordValidator = {
 				for (var opt in nordValidator.options) {
 					if (savedObj.hasOwnProperty(opt)) {
 						nordValidator.options[opt] = savedObj[opt];
+						if (nordValidator.dbug) console.log ("Just set " + opt + " to " + nordValidator.options[opt] + ".");
 						if (opt == "dbug") {
 							if (nordValidator.dbug === false && nordValidator.options[opt] === true) console.log ("loadOptions::Turning nordValidator.dbug on.");
 							nordValidator.dbug = nordValidator.options[opt];
@@ -97,13 +98,19 @@ var nordValidator = {
 		nordValidator.afterLoad();
 	}, // End of setLoaded
 	afterLoad : function () {
+		console.log ("Now that the page is loaded, I'll now execute " + nordValidator.postLoad.length + " postload functions.");
 		for (var i = 0; i < nordValidator.postLoad.length; i++) {
 			nordValidator.postLoad[i]();
 		}
 	}, // End of afterLoad
 	addToPostLoad : function (funcs) {
-		nordValidator.postLoad = Object.assign(nordValidator.postLoad, funcs);
+		//nordValidator.postLoad = Object.assign(nordValidator.postLoad, funcs);
+		//nordValidator
+		for (var f in funcs) {
+			nordValidator.postLoad.push(funcs[f]);
+		}
 		if (nordValidator.loaded) {
+			console.log ("page is already loaded, I'll now execute " + nordValidator.postLoad.length + " postload functions.");
 			nordValidator.afterLoad();
 		}
 	}, // End of addToPostLoad

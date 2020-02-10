@@ -16,7 +16,6 @@ var nordValidatorOpts = {
 	usingTmp : false,
 	controls : {
 		"validatorURLTxt" : null,
-		"waitTimeTxt" : null,
 		"htmlTextChk" : null,
 		"htmlCommentsChk" : null,
 		"cdataChk" : null,
@@ -82,6 +81,7 @@ var nordValidatorOpts = {
 	saveOptions : function () {
 		// Gather options from the form
 		nordValidator.options["validatorURL"] = nordValidatorOpts.controls["validatorURLTxt"].value;
+		if (nordValidatorOpts.dbug) console.log ("saveOptions::Saving validatorURL: " + nordValidator.options["validatorURL"] + ".");
 		nordValidator.options["htmlText"] = nordValidatorOpts.controls["htmlTextChk"].checked;
 		nordValidator.options["htmlComments"] = nordValidatorOpts.controls["htmlCommentsChk"].checked;
 		if (nordValidatorOpts.dbug) console.log ("saveOptions::Saving Comments.  Since htmlCommentsChk is " + nordValidatorOpts.controls["htmlCommentsChk"].checked + " then htmlComments is now " + nordValidator.options["htmlComments"] + ".");
@@ -93,7 +93,7 @@ var nordValidatorOpts = {
 		browser.runtime.sendMessage({"msg":"Updating options", "task" : "updateOptions", "options" : nordValidator.options});
 	}, // End of saveOptions
 	fillValues : function () {
-		//if (nordValidatorOpts.dbug) //
+		if (nordValidatorOpts.dbug) console.log ("Filling values.");
 		// Fill the forms and stuff
 		nordValidatorOpts.controls["validatorURLTxt"].setAttribute("value", nordValidator.options.validatorURL);
 		if (nordValidator.options["htmlText"]) nordValidatorOpts.controls["htmlTextChk"].setAttribute("checked", "checked");
