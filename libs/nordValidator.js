@@ -7,7 +7,6 @@ var nordValidator = {
 	postLoad : [],
 	options : {
 		"validatorURL" : "https://validator.w3.org/nu/",
-		"waitTime" : 1000,
 		"htmlText" : false,
 		"htmlComments" : false,
 		"scriptSrc" : false,
@@ -89,7 +88,7 @@ var nordValidator = {
 			getting.then(theThen, failure);
 		}
 		catch(ex) {
-			console.log ("Caught something! " + ex.toString());
+			console.error ("Caught something! " + ex.toString());
 		}
 
 	}, // End of loadOptions

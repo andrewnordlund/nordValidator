@@ -5,6 +5,8 @@ if (typeof (nordValidatorBG) == "undefined") {
 var nordValidatorBG = {
 	dbug : nordValidator.dbug,
 	init : function () {
+		console.log ("Retrying.");
+		nordValidatorBG.getStatus("retry");
 	}, // End of init
 	changeIcon : function (stat, errs, warnings) {
 		/*
@@ -48,11 +50,13 @@ var nordValidatorBG = {
 		});
 	}, // End of changeIcon
 	getStatus : function () {
+		var cmd = "getStatus";
+		if (arguments.length > 0) cmd = arguments[0];
 		browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
 			//if (tabs[0]) {
 				if (tabs[0].url.match(/^https?:\/\//)) {
 					if (nordValidatorBG.dbug) console.log ("nordValidatorBG::sending message to " + tabs[0].title + " to get Status.");
-					browser.tabs.sendMessage(tabs[0].id, {task: "getStatus"}).then(function (msg) {
+					browser.tabs.sendMessage(tabs[0].id, {task: cmd}).then(function (msg) {
 						if (nordValidatorBG.dbug) console.log ("Promise fulfilled.");
 						nordValidatorBG.changeIcon(msg["status"], msg["errorCount"], msg["warningCount"]);
 					}, nordValidator.errorFun).catch(function (x) {
@@ -61,7 +65,7 @@ var nordValidatorBG = {
 							browser.tabs.executeScript(tabs[0].id, {file : "/libs/nordburg.js"}).then (function () {
 								browser.tabs.executeScript(tabs[0].id, {file : "/libs/nordValidator.js"}).then(function () {
 									browser.tabs.executeScript(tabs[0].id, {file : "/content_scripts/nordValidator-cs.js"}).then(function () {
-										browser.tabs.sendMessage(tabs[0].id, {task : "getStatus"}).then(function (msg) {
+										browser.tabs.sendMessage(tabs[0].id, {task : cmd}).then(function (msg) {
 											if (nordValidatorBG.dbug) console.log ("Promise eventually fulfilled.");
 											nordValidatorBG.changeIcon(msg["status"], msg["errorCount"], msg["warningCount"]);
 										}, nordValidator.errorFun);
@@ -76,6 +80,32 @@ var nordValidatorBG = {
 			//}
 		}, nordValidator.errorFun);
 	}, // End of getStatus
+	modifyHeaders : function (details) {
+		var retry = false;
+		if (details.type == "main_frame") {
+			console.log ("Caught headers!");
+			console.log ("responseHeaders: (" + details.type + ") " + details.url + ": " + details.responseHeaders + ".");
+			for (var k in details.responseHeaders) {
+				//if (typeof(details.responseHeaders[k]) == "object") {
+				//if (details.responseHeaders[k].match(/Content-Security-Policy/i) 
+				for (j in details.responseHeaders[k]) {
+					if (details.responseHeaders[k][j].match(/Content-Security-Policy/i)) {
+						console.log (j + ": " + details.responseHeaders[k][j] + ".");
+						console.log ("value: " + details.responseHeaders[k]["value"] + ".");
+						
+						details.responseHeaders.splice(details.responseHeaders[k], 1);
+						retry = true;
+					}
+					//console.log (k + ": " + nordburg.objToString(details.responseHeaders[k]) + ".");
+				}
+			}
+		}
+		if (retry) {
+			nordValidatorBG.getStatus("retry");
+		}
+
+
+	}, // End of modifyHeaders
 	notify : function (message, sender, sendResponse) {
 		if (nordValidatorBG.dbug) console.log ("nordValidatorBG::Got a message: " + (message.hasOwnProperty("msg") ? message["msg"] : "[no msg]") + " with task: " + message["task"] + " with sender " + sender + " and sendResponse " + sendResponse + ".");
 		if (message["task"] == "changeIcon") {
@@ -143,6 +173,7 @@ var updateListenerFun = function (tabId, changeInfo, tabInfo) {
 	}
 }
 
+//browser.webRequest.onHeadersReceived.addListener(nordValidatorBG.modifyHeaders, {urls : ["<all_urls>"]}, ["blocking", "responseHeaders"]);
 browser.tabs.onActivated.addListener(activeListenerFun);
 
 browser.tabs.onUpdated.addListener(updateListenerFun);
@@ -162,8 +193,9 @@ browser.tabs.onUpdated.addListener(updateListenerFun);
 //});
 
 browser.browserAction.onClicked.addListener(nordValidatorBG.init);
-
 browser.runtime.onMessage.addListener(nordValidatorBG.notify);
+
+
 nordValidator.addToPostLoad([function () {
 	if (nordValidatorBG.dbug) console.log ("setting nordValidatorBG.dbug to " + nordValidator.dbug + ".");
 	nordValidatorBG.dbug = nordValidator.dbug;}]

@@ -10,10 +10,9 @@ var nordValidatorCS = {
 	hash : null,
 	returnFun : null,
 	timeoutID : null,
+	workerWorking : null,
 	init : function () {
 		// Should I do something here?
-		//if (nordValidatorCS.dbug) console.log ("Initting with timeoutID of: " + nordValidatorCS.timeoutID + ", and I'll be waiting for " + nordValidator.options["waitTime"] + ".");
-		//if (document.location.href.match(/http/i) && !nordValidatorCS.timeoutID) nordValidatorCS.timeoutID = setTimeout(nordValidatorCS.startProcess, nordValidator.options["waitTime"]);
 		nordValidatorCS.startProcess();
 	}, // End of init
 	startProcess : function () {
@@ -36,6 +35,7 @@ var nordValidatorCS = {
 		
 		// Just send form data randomly.  For some reason the json part isn't working.
 		if (nordValidatorCS.dbug) console.log ("Creating a faux-form and submitting it. (" + document.location.href + ")");
+		if (nordValidatorCS.dbug) console.log ("to: " + nordValidator.options.validatorURL);
 		var http = new XMLHttpRequest();
 		http.open("POST", nordValidator.options.validatorURL, true);
 		var fd = new FormData();
@@ -44,12 +44,12 @@ var nordValidatorCS = {
 		fd.append("content", contents);
 		//fd.append("showoutline","yes");
 		
+		http.onload = function () {
+			console.log ("used http.onload.");
+			nordValidatorCS.dealWithResults(http.responseText);
+		}
+		//http.addEventListener("load", function () {console.log ("used http.addEventListener.");nordValidatorCS.dealWithResults(http.responseText);}, false);
 		http.send(fd);
-		//http.onload = function () {
-		//	console.log ("used http.onload.");
-		//	nordValidatorCS.dealWithResults(http.responseText);
-		//}
-		http.addEventListener("load", function () {console.log ("used http.addEventListener.");nordValidatorCS.dealWithResults(http.responseText);}, false);
 		//clearTimeout(nordValidatorCS.timeoutID);
 		//nordValidatorCS.timeoutID = null;
 	}, // End of sendForm
@@ -172,7 +172,7 @@ var nordValidatorCS = {
 		for (var i = 0; i < results.messages.length; i++) {
 			if (results.messages[i]["type"] == "error") {
 				if (results.messages[i]["message"].match(badErrorsRS)) {
-					console.log ("Adding " + results.messages[i]["message"] + "to realErrors.");
+					if (nordValidatorCS.dbug) console.log ("Adding " + results.messages[i]["message"] + "to realErrors.");
 					realErrors.push(results.messages[i]);
 				}
 			} else if (results.messages[i]["type"] == "info" && results.messages[i]["subType"] == "warning") {
@@ -250,7 +250,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		if (nordValidator.options["htmlComments"] && nordValidator.options["htmlText"] && nordValidator.options["cdata"]) {
 			if (nordValidatorCS.dbug) console.log("Include everything.  Sending the whole document.");
 			// Just friggin' validate the whole thing with nothing removed
-			
+			return doctype + contents;
 		} else {
 			// Okay.  Something has to be removed.  Maybe all but the tags? That would be recommended
 			//if (!nordValidator.options["htmlComments"] && !nordValidator.options["htmlText"] && !nordValidator.options["cdata"]) {
@@ -268,12 +268,14 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 				contents = tags.join("\n");
 				*/
 			var workerFun = `self.onmessage = function(e) {
-					console.log ("workerFun::Got message " + e.data + ".");
+					postMessage({msg: "working"});
+					//console.log ("workerFun::Got message " + e.data + ".");
 					var contents = e.data["contents"];
+					var dbug = e.data["dbug"];
 					contents = contents.split (/(<!--(?:.|\\n)*?-->|<!\\[CDATA\\[(?:.|\\n)*\\]\\]>|<(?:\\/?[^!>]+\\s*(?:\\w+(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|\`[^\`]*\`|\\w*))?)*)>)/i);
-					console.log ("Got " + contents.length + " sections.");
+					if (dbug) console.log ("Got " + contents.length + " sections.");
 					for (var i = 0; i < contents.length; i++) {
-						//console.log ("Before: " + i + ": " + contents[i] + ".");
+						//if (dbug) console.log ("Before: " + i + ": " + contents[i] + ".");
 						if (contents[i].match(/<!--(.|\\n)*?-->/)) {
 							if (!e.data["htmlComments"]) {
 								//contents[i] = "";
@@ -307,19 +309,19 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 						/*
 						if (!contents[i].match(/^<(?:[^!>]+\\s*\\w+(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|\`[^\`]*\`|\\w*))?)*>$/)) {
 							if (!contents[i].match(/^ $/)) {
-								console.log ("Changing " + contents[i] + " to abc.");
+								//console.log ("Changing " + contents[i] + " to abc.");
 								contents[i] = "abc";
 							}
 						}
 						*/
-						//console.log ("After: " +i + ": " + contents[i] + ".");
+						//if (dbug) console.log ("After: " +i + ": " + contents[i] + ".");
 					}
 					contents = contents.join("\\n");
 					//self.postMessage('Done my thang with new contents: ' + contents);
-					console.log ("Sending contents back as " + contents + ".");
-					postMessage(e.data["doctype"] + contents);
+					//console.log ("Sending contents back as " + contents + ".");
+					postMessage({msg : "contents", contents : e.data["doctype"] + contents});
 				};
-				console.log ("workerFun::Running workerFun.");`
+				//console.log ("workerFun::Running workerFun.");`
 
 			var blob = new Blob([workerFun]);
 				//contents = contents.split (/(<(?:[^!>]+\s*\w+(?:\s*=\s*(?:"[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>)/);
@@ -339,18 +341,43 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 
 			// Obtain a blob URL reference to our worker 'file'.
 			var blobURL = window.URL.createObjectURL(blob);
-
-			var worker = new Worker(blobURL);
-			worker.onmessage = function(e) {
-				console.log ("worker.onMessage::Got worker message " + e.data + ".");
-				nordValidatorCS.sendForm(e.data);
-				//contents = e.data;
 	
-				// e.data == 'msg from worker'
+			var worker = null;
+			worker = new Worker(blobURL);
+			worker.onmessage = function(e) {
+				if (e.data["msg"] == "working") {
+					nordValidatorCS.workerWorking = true;
+				} else if (e.data["msg"] == "contents") {
+					//console.log ("worker.onMessage::Got worker message " + e.data + ".");
+					nordValidatorCS.sendForm(e.data["contents"]);
+					//contents = e.data;
+					// e.data == 'msg from worker'
+				}
 			};
 
-			worker.postMessage({"doctype" : doctype, "contents" : contents, "htmlComments" : nordValidator.options["htmlComments"], "cdata" : nordValidator.options["cdata"], "htmlText" : nordValidator.options["htmlText"]}); // Start the worker.
+			worker.postMessage({"doctype" : doctype, "contents" : contents, "htmlComments" : nordValidator.options["htmlComments"], "cdata" : nordValidator.options["cdata"], "htmlText" : nordValidator.options["htmlText"], dbug: nordValidatorCS.dbug}); // Start the worker.
 
+			setTimeout(function () {
+				if (nordValidatorCS.workerWorking) {
+					if (nordValidatorCS.dbug) console.log ("Worker working.  Don't do anything further.");
+				} else {
+					if (nordValidatorCS.dbug) console.log ("Uh oh.  Time for Plan B.");
+					
+					if (!nordValidator.options["htmlComments"]) {
+					contents = nordValidatorCS.removeComments(contents);
+					}
+					if (!nordValidator.options["cdata"]) {
+						contents = nordValidatorCS.removeCDATA(contents);
+					}
+					if (!nordValidator.options["htmlText"]) {
+						contents = nordValidatorCS.removeText(contents);
+					}
+
+					
+					nordValidatorCS.sendForm(doctype + contents);
+
+				}
+			}, 500);
 				
 				/*
 			} else {
@@ -425,21 +452,22 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 	removeComments : function (contents) {
 		if (nordValidatorCS.dbug) console.log ("Removing comments:");
 		contents = contents.replace(/<!--(.|\n)*?-->/g, "");
-		console.log ("Contents now: " + contents + ".");
+		//console.log ("Contents now: " + contents + ".");
 		return contents;
 	}, // End of removeComments
 	removeCDATA : function (contents) {
 		if (nordValidatorCS.dbug) console.log ("Removing cdata:");
 		contents = contents.replace(/<!\[CDATA\[.*\]\]>/ig, "");
-		console.log ("Contents now: " + contents + ".");
+		//console.log ("Contents now: " + contents + ".");
 		return contents;
 	}, // End of removeCDATA
 	removeText : function (contents) {
 		if (nordValidatorCS.dbug) console.log ("Removing text:");
-		var tags = contents.match(/(<\/?[^!>]*?(\s*\w+(\s*=\s*("[^"]*"|'[^']*'|`[^`]*`|\w*))?)*>|<!--(.|\n)*?-->)/ig);
+		var tags = contents.match(/(<\/?!?[^>]+(\s*\w+(\s*=\s*("[^"]*"|'[^']*'\w*))?)*>|<!--(.|\n)*?-->)/ig);
+		//var tags = contents.match(/(<\/?!?[^>]+(\s*\w+(\s*=\s*("[^"]*"|'[^']*'\w*))?)*>/ig);
 		tags.slice(1);
 		contents = tags.join("\n");
-		console.log ("Contents now: " + contents + ".");
+		//console.log ("Contents now: " + contents + ".");
 		return contents;
 	}, // End of removeText
 	startup : function () {
@@ -448,8 +476,8 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 		if (nordValidatorCS.dbug) console.log ("nordValidator-cs::Got a task: " + message["task"] + "."); // from " + message["pageURL"]);
 		
 		   // deal with tasks here
-		if (message["task"] == "getStatus") {
-			if (nordValidatorCS.stat == null) nordValidatorCS.init();
+		if (message["task"] == "getStatus" || message["task"] == "retry") {
+			if (nordValidatorCS.stat == null || message["task"] == "retry") nordValidatorCS.init();
 			if (nordValidatorCS.dbug) console.log ("nordValidator-cs::sending back a stat of " + nordValidatorCS.stat + ".");
 			sendMessage({"task":"updateIcon", "status":nordValidatorCS.stat, "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
 			if (nordValidatorCS.stat == "waiting" || nordValidatorCS.stat === null) {
@@ -459,6 +487,7 @@ var%20filterRE=filterStrings.join("|");var%20root=document.getElementById("resul
 					nordValidatorCS.returnFun = null;
 				}
 			}
+
 		} else {
 			sendMessage({"task":"updateIcon", "status":"error", "errorCount" : nordValidatorCS.errCnt, "warningCount" : nordValidatorCS.warningCnt});
 		}
