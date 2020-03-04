@@ -156,21 +156,28 @@ var activeListenerFun = function (activeInfo) {
 
 var updateListenerFun = function (tabId, changeInfo, tabInfo) {
 	if (nordValidatorBG.dbug) console.log ("nordValidator-bg::tab " + tabId + "(" + changeInfo.url + "/" + changeInfo.title + "(" + changeInfo.status + ")) has been Updated to " + tabInfo.url +"/"+tabInfo.title +"(" + tabInfo.status + ").");
-	nordValidatorBG.changeIcon("waiting", 0, 0);
-	if (tabInfo.url.match(/^https?:\/\//i)) {
-		if (tabInfo.status == "complete" && changeInfo.status == "complete") {
-			if (nordValidatorBG.dbug) console.log ("nordValidator-bg::Finally complete.  Hopefully thing should be done by now.  Sending to tabId: " + tabId);
-			nordValidatorBG.changeIcon("waiting", 0, 0);
-			nordValidatorBG.getStatus();
-			//browser.tabs.sendMessage(tabId, {task: "getStatus"});.then(function (msg) {
-			//	nordValidatorBG.changeIcon(msg["status"]);
-			//}, nordValidator.errorFun);*/
+	//nordValidatorBG.changeIcon("waiting", 0, 0);
+	browser.tabs.query({active: true, currentWindow: true}).then(function(tabs) {
+		if (tabs[0]) {
+			if (tabInfo.url.match(/^https?:\/\//i)) {
+				if (tabInfo.status == "complete" && changeInfo.status == "complete") {
+					if (nordValidatorBG.dbug) console.log ("nordValidator-bg::Finally complete.  Hopefully thing should be done by now.  Sending to tabId: " + tabId);
+					nordValidatorBG.changeIcon("waiting", 0, 0);
+					nordValidatorBG.getStatus();
+					//browser.tabs.sendMessage(tabId, {task: "getStatus"});.then(function (msg) {
+					//	nordValidatorBG.changeIcon(msg["status"]);
+					//}, nordValidator.errorFun);*/
+				} else {
+					// Not complete
+					//nordValidatorBG.changeIcon("waiting", 0, 0);
+				}
+			} else {
+				nordValidatorBG.changeIcon("inactive", 0, 0);
+			}
 		} else {
-			//nordValidatorBG.changeIcon("waiting", 0, 0);
+			if (nordValidatorBG.dbug) console.log ("The updated tab isn't the active tab.");
 		}
-	} else {
-		nordValidatorBG.changeIcon("inactive", 0, 0);
-	}
+	}, nordValidator.errorFun);
 }
 
 //browser.webRequest.onHeadersReceived.addListener(nordValidatorBG.modifyHeaders, {urls : ["<all_urls>"]}, ["blocking", "responseHeaders"]);
