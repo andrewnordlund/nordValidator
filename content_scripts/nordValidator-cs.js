@@ -45,7 +45,7 @@ var nordValidatorCS = {
 		//fd.append("showoutline","yes");
 		
 		http.onload = function () {
-			console.log ("used http.onload.");
+			if (nordValidatorCS.dbug) console.log ("used http.onload.");
 			nordValidatorCS.dealWithResults(http.responseText);
 		}
 		//http.addEventListener("load", function () {console.log ("used http.addEventListener.");nordValidatorCS.dealWithResults(http.responseText);}, false);
@@ -164,7 +164,7 @@ var nordValidatorCS = {
 	dealWithResults : function (results) {
 		if (nordValidatorCS.dbug) console.log("with results: " + results);
 		results = JSON.parse(results);
-		var badErrors = ["tag seen","Stray end tag","Bad start tag","violates nesting rules","Duplicate ID","first occurrence of ID","Unclosed element","not allowed as child of element","unclosed elements","not allowed on element","unquoted attribute value","Duplicate attribute"];
+		var badErrors = ["tag seen","Stray end tag","Bad start tag","violates nesting rules","Duplicate ID","first occurrence of ID","Unclosed element","not allowed as child of element", "must not appear as a descendant of","unclosed elements","not allowed on element","unquoted attribute value","Duplicate attribute"];
 		var badErrorsRS = badErrors.join("|");
 		var realErrors = [];
 		var warnings = [];
